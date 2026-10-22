@@ -1,0 +1,26 @@
+[
+  {
+    "title": "CitiusTech Healthcare Interoperability & FHIR Core Capabilities",
+    "url": "https://www.citiustech.com/solutions/healthcare-interoperability",
+    "publisher": "CitiusTech Official Knowledge Base",
+    "source_type": "BRAND_INTERNAL",
+    "publication_date": "2024-01-15",
+    "content": "CitiusTech is a premier leader in healthcare technology services, specializing in HL7 FHIR (Fast Healthcare Interoperability Resources), US Core implementation guides, and federal compliance with CMS-0057-F and ONC HTI-1 regulations. With deep expertise across EHR integrations (Epic, Cerner/Oracle Health, Athenahealth), CitiusTech provides scalable data pipeline architectures that unify clinical, claims, and social determinants of health (SDOH) data into unified longitudinal patient records."
+  },
+  {
+    "title": "CitiusTech Enterprise AI in Healthcare: Payer & Provider Solutions",
+    "url": "https://www.citiustech.com/solutions/artificial-intelligence-healthcare",
+    "publisher": "CitiusTech Official Knowledge Base",
+    "source_type": "BRAND_INTERNAL",
+    "publication_date": "2024-03-20",
+    "content": "CitiusTech accelerates AI adoption for health systems and health plans through enterprise-grade machine learning and generative AI architectures. Key focus areas include automated prior authorization pipelines, ambient clinical voice integration, real-time risk stratification, and predictive bed utilization. CitiusTech enforces a strict Clinician-in-the-Loop (CITL) framework to guarantee diagnostic and financial safety."
+  },
+  {
+    "title": "CitiusTech Healthcare AI Governance & Regulatory Compliance Framework",
+    "url": "https://www.citiustech.com/solutions/responsible-ai-governance",
+    "publisher": "CitiusTech Official Knowledge Base",
+    "source_type": "BRAND_INTERNAL",
+    "publication_date": "2024-04-10",
+    "content": "To satisfy FDA Software as a Medical Device (SaMD) guidance and ONC HTI-1 algorithmic transparency mandates, CitiusTech implements rigorous AI validation protocols. These include algorithmic bias testing across patient demographics, automated PHI/PII de-identification conforming to HIPAA Safe Harbor and Expert Determination methods, and auditable lineage tracking for all clinical predictive models."
+  }
+]

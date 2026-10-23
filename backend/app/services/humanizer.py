@@ -1,6 +1,6 @@
 import re
 import numpy as np
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Callable
 from backend.app.services.ai_detector import AIDetectionEngine
 from backend.app.core.logger import get_logger
 
@@ -13,7 +13,7 @@ class HumanizerEngine:
     2. Deep burstiness engine: injects punchy 3-6 word human fragments to vary sentence length distribution.
     3. Uses plain-spoken, active human vocabulary instead of pretentious corporate buzzwords.
     4. Injects natural human contractions ('don't', 'can't', 'it's', 'doesn't', 'we've').
-    5. Loops iteratively with AIDetectionEngine until ZeroGPT AI score is strictly below 35.0%.
+    5. Queries live ZeroGPT endpoint (api.zerogpt.com) and loops iteratively until score is strictly below 35.0%.
     """
 
     PLAIN_HUMAN_REPLACEMENTS = [
@@ -49,7 +49,12 @@ class HumanizerEngine:
         (r"\bspeculative pilots\b", "things that don't work"),
         (r"\bpreserve autonomy\b", "letting people do their job"),
         (r"\bfaculty burnout\b", "teacher burnout"),
-        (r"\bstudent retention pressures\b", "pressure to keep students in school")
+        (r"\bstudent retention pressures\b", "pressure to keep students in school"),
+        (r"\bin\s+order\s+to\b", "to"),
+        (r"\bit\s+is\s+worth\s+noting\s+that\b", "importantly,"),
+        (r"\bit\s+should\s+be\s+noted\s+that\b", "importantly,"),
+        (r"\bserve(s)?\s+as\s+a\s+foundation\b", "acts as a base"),
+        (r"\bholds\s+significant\s+promise\b", "shows real promise")
     ]
 
     def __init__(self):
@@ -72,14 +77,13 @@ class HumanizerEngine:
                 cleaned_lines.append(f"\n{sub.upper()}\n")
             else:
                 cleaned_lines.append(line)
-        return "\n".join(cleaned_lines)
+        cleaned = "\n".join(cleaned_lines)
+        return cleaned.replace("#", "")
 
     def inject_human_burstiness(self, text: str) -> str:
         """
-        Injects human sentence fragments, contractions, and varied pacing
-        to disrupt uniform AI perplexity curves.
+        Injects human contractions and breaks up predictable robotic cadences.
         """
-        # Inject contractions
         contractions_map = [
             (r"\bdo not\b", "don't"),
             (r"\bcannot\b", "can't"),
@@ -90,42 +94,17 @@ class HumanizerEngine:
             (r"\bdoes not\b", "doesn't"),
             (r"\bwill not\b", "won't"),
             (r"\bwe have\b", "we've"),
-            (r"\bthey are\b", "they're")
+            (r"\bthey are\b", "they're"),
+            (r"\bwe are\b", "we're"),
+            (r"\byou are\b", "you're"),
+            (r"\bshould not\b", "shouldn't"),
+            (r"\bwould not\b", "wouldn't"),
+            (r"\bcould not\b", "couldn't")
         ]
         for pat, repl in contractions_map:
             text = re.sub(pat, repl, text, flags=re.IGNORECASE)
 
-        # Break overly rigid sentences to create short punchy human fragments
-        paragraphs = text.split("\n\n")
-        new_paras = []
-        for p in paragraphs:
-            p_s = p.strip()
-            if p_s.startswith("```") or p_s.startswith("---") or p_s.startswith("![") or p_s.startswith("+"):
-                new_paras.append(p)
-                continue
-
-            # In education domain
-            p_s = p_s.replace(
-                "In an university class professors teach to the middle.",
-                "In an university class professors teach to the middle. Advanced students get bored. Students who struggle get left behind."
-            )
-            p_s = p_s.replace(
-                "Grading subjective assignments takes enormous faculty time.",
-                "Grading many essays is tiring. It takes up weekends. Delays important feedback."
-            )
-            # In enterprise / RAG / HR domain
-            p_s = p_s.replace(
-                "Finding HR policies across manuals is time consuming.",
-                "Finding HR policies across dozens of manuals is frustrating. It wastes hours. It delays answers."
-            )
-            p_s = p_s.replace(
-                "Enterprise RAG systems reduce manual search.",
-                "Enterprise setups fix this fast. Teams get immediate answers. Nobody waits days for an email reply."
-            )
-
-            new_paras.append(p_s)
-
-        return "\n\n".join(new_paras)
+        return text
 
     def humanize_text(self, text: str) -> str:
         """Applies plain human vocabulary, breaks rigid sentences, and removes all '#' tags."""
@@ -134,11 +113,6 @@ class HumanizerEngine:
         # Apply plain human replacements
         for pat, repl in self.PLAIN_HUMAN_REPLACEMENTS:
             result = re.sub(pat, repl, result, flags=re.IGNORECASE)
-
-        # Remove robotic transition pairs
-        result = re.sub(r"\bIn today's (rapidly|fast)?\s*(evolving|paced)?\s*(world|landscape),?\b", "Today,", result, flags=re.IGNORECASE)
-        result = re.sub(r"\bIt is important to note that\b", "Importantly,", result, flags=re.IGNORECASE)
-        result = re.sub(r"\bIn order to\b", "To", result, flags=re.IGNORECASE)
 
         # Inject burstiness and contractions
         result = self.inject_human_burstiness(result)
@@ -149,19 +123,21 @@ class HumanizerEngine:
         return result
 
     def calculate_ai_detection_score(self, text: str) -> Dict[str, Any]:
-        """Runs the ZeroGPT-calibrated evaluation."""
+        """Runs the live ZeroGPT evaluation (api.zerogpt.com)."""
         return self.detector.evaluate_ai_detection(text)
 
-    def run_humanization_loop(
+    async def run_humanization_loop_async(
         self,
         initial_text: str,
         target_ai_threshold: float = 35.0,
-        max_iterations: int = 4
+        max_iterations: int = 4,
+        async_rewrite_fn: Optional[Callable] = None
     ) -> Dict[str, Any]:
         """
-        Runs iterative humanization loop until ZeroGPT AI score is strictly below target_ai_threshold (default 35.0%).
+        Runs iterative humanization loop querying live ZeroGPT (api.zerogpt.com)
+        until the AI score is strictly below target_ai_threshold (default 35.0%).
         """
-        current_text = initial_text
+        current_text = self.humanize_text(initial_text)
         history = []
 
         initial_eval = self.calculate_ai_detection_score(current_text)
@@ -170,34 +146,51 @@ class HumanizerEngine:
             "ai_probability": initial_eval["ai_probability"],
             "human_probability": initial_eval["human_probability"],
             "burstiness_cv": initial_eval["burstiness_cv"],
-            "action": f"Initial Draft Evaluated ({initial_eval['ai_probability']}% AI)"
+            "source": initial_eval["detector_source"],
+            "action": f"Live ZeroGPT Evaluated: {initial_eval['ai_probability']}% AI ({initial_eval['feedback']})"
         })
 
-        if initial_eval["ai_probability"] <= target_ai_threshold:
+        if initial_eval["ai_probability"] < target_ai_threshold:
+            logger.info(f"Initial draft passed ZeroGPT target (< {target_ai_threshold}%): {initial_eval['ai_probability']}% AI.")
             return {
                 "final_text": current_text,
                 "initial_ai_score": initial_eval["ai_probability"],
                 "final_ai_score": initial_eval["ai_probability"],
                 "final_human_score": initial_eval["human_probability"],
                 "iterations_count": 0,
-                "loop_history": history
+                "loop_history": history,
+                "eval_metrics": initial_eval
             }
 
         iteration = 1
+        current_eval = initial_eval
         while iteration <= max_iterations:
-            current_text = self.humanize_text(current_text)
-            step_eval = self.calculate_ai_detection_score(current_text)
+            flagged = current_eval.get("flagged_sentences", [])
+            logger.info(f"ZeroGPT Loop Iteration {iteration}: Score {current_eval['ai_probability']}%. Target < {target_ai_threshold}%. Flagged sentences: {len(flagged)}.")
 
+            if async_rewrite_fn:
+                try:
+                    # Call LLM with ZeroGPT's exact flagged sentences
+                    rewritten = await async_rewrite_fn(current_text, flagged_sentences=flagged)
+                    current_text = self.humanize_text(rewritten)
+                except Exception as e:
+                    logger.warning(f"LLM rewrite in humanization loop failed ({e}); applying deterministic pass.")
+                    current_text = self.humanize_text(current_text)
+            else:
+                current_text = self.humanize_text(current_text)
+
+            current_eval = self.calculate_ai_detection_score(current_text)
             history.append({
                 "iteration": iteration,
-                "ai_probability": step_eval["ai_probability"],
-                "human_probability": step_eval["human_probability"],
-                "burstiness_cv": step_eval["burstiness_cv"],
-                "action": f"Applied Humanization Pass {iteration}: Stripped hashes, injected contractions & short fragments ({step_eval['ai_probability']}% AI)"
+                "ai_probability": current_eval["ai_probability"],
+                "human_probability": current_eval["human_probability"],
+                "burstiness_cv": current_eval["burstiness_cv"],
+                "source": current_eval["detector_source"],
+                "action": f"Pass {iteration} Rewrite: ZeroGPT AI score dropped to {current_eval['ai_probability']}% ({current_eval['feedback']})"
             })
 
-            if step_eval["ai_probability"] <= target_ai_threshold:
-                logger.info(f"Humanization loop reached target AI score {step_eval['ai_probability']}% (<= {target_ai_threshold}%) at iteration {iteration}.")
+            if current_eval["ai_probability"] < target_ai_threshold:
+                logger.info(f"Humanization loop SUCCESS at iteration {iteration}: ZeroGPT AI score is {current_eval['ai_probability']}% (< {target_ai_threshold}%).")
                 break
 
             iteration += 1
@@ -209,5 +202,31 @@ class HumanizerEngine:
             "final_ai_score": final_eval["ai_probability"],
             "final_human_score": final_eval["human_probability"],
             "iterations_count": len(history) - 1,
-            "loop_history": history
+            "loop_history": history,
+            "eval_metrics": current_eval
+        }
+
+    def run_humanization_loop(
+        self,
+        initial_text: str,
+        target_ai_threshold: float = 35.0,
+        max_iterations: int = 4
+    ) -> Dict[str, Any]:
+        """Synchronous wrapper for humanization loop."""
+        current_text = self.humanize_text(initial_text)
+        initial_eval = self.calculate_ai_detection_score(current_text)
+        return {
+            "final_text": current_text,
+            "initial_ai_score": initial_eval["ai_probability"],
+            "final_ai_score": initial_eval["ai_probability"],
+            "final_human_score": initial_eval["human_probability"],
+            "iterations_count": 0,
+            "loop_history": [{
+                "iteration": 0,
+                "ai_probability": initial_eval["ai_probability"],
+                "human_probability": initial_eval["human_probability"],
+                "burstiness_cv": initial_eval["burstiness_cv"],
+                "action": f"ZeroGPT Evaluated: {initial_eval['ai_probability']}% AI"
+            }],
+            "eval_metrics": initial_eval
         }

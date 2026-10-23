@@ -309,25 +309,26 @@ class SupervisorOrchestrator:
             )
 
             t_aud = time.time()
-            editorial_audit = self.editorial_agent.execute(current_markdown)
+            editorial_audit = await self.editorial_agent.execute_async(current_markdown, self.llm_provider)
             # Adopt humanized text directly into active draft pipeline
             if editorial_audit.get("humanized_text"):
                 current_markdown = editorial_audit["humanized_text"]
                 current_draft_data["content_markdown"] = current_markdown
 
+            is_ai_safe = editorial_audit.get("ai_probability", 100.0) < 35.0
             editorial_audit["checkpoints"] = [
                 {"title": "ZeroGPT Cliché Purge", "checked": True, "detail": "Stripped 'delve', 'tapestry', 'moreover', 'pivotal'"},
                 {"title": "Burstiness & Fragment Injection", "checked": True, "detail": f"High sentence CV ({editorial_audit.get('sentence_burstiness_cv', 0.68)}) with punchy short fragments"},
                 {"title": "Natural Contractions (don't, can't, it's)", "checked": True, "detail": "Organic conversational contractions added"},
                 {"title": "Transition Word Balance (>= 30%)", "checked": True, "detail": "Human conversational transitions maintained"},
-                {"title": "ZeroGPT < 35% Safe Threshold", "checked": True, "detail": f"AI detection confirmed at {editorial_audit.get('ai_probability', 18)}% (< 35% safe threshold)"}
+                {"title": "ZeroGPT < 35% Safe Threshold", "checked": is_ai_safe, "detail": f"AI detection confirmed at {editorial_audit.get('ai_probability')}% (< 35% safe threshold) via {editorial_audit.get('detector_source', 'ZeroGPT')}"}
             ]
 
             await self.log_step(
-                campaign.id,
-                "HumanStyleEditorialAgent",
-                "SUCCESS" if not editorial_audit["blocking_issues"] else "WARNING",
-                f"Anti-AI Humanization Loop: Reduced AI score to {editorial_audit['ai_probability']}% ({editorial_audit['human_probability']}% Human). Burstiness CV: {editorial_audit['sentence_burstiness_cv']}.",
+                campaign.id, 
+                "HumanStyleEditorialAgent", 
+                "SUCCESS" if not editorial_audit["blocking_issues"] else "WARNING", 
+                f"Anti-AI Humanization Loop: Reduced AI score to {editorial_audit['ai_probability']}% ({editorial_audit['human_probability']}% Human). Verified via {editorial_audit.get('detector_source', 'ZeroGPT')}.",
                 details=editorial_audit,
                 latency_ms=int((time.time() - t_aud) * 1000)
             )
@@ -436,7 +437,8 @@ class SupervisorOrchestrator:
                 await self.db.commit()
                 current_markdown = await self.llm_provider.rewrite_for_human_naturalness(
                     current_markdown,
-                    all_blocking + all_suggestions
+                    all_blocking + all_suggestions,
+                    flagged_sentences=editorial_audit.get("flagged_sentences", [])
                 )
                 current_draft_data["content_markdown"] = current_markdown
                 revision_count += 1

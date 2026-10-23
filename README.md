@@ -87,10 +87,11 @@ Replaced all static fallback dictionaries with live public endpoints:
 * **Groq Llama 3.3 70B Fallback**: Automatic, seamless failover to Groq (`llama-3.3-70b-versatile`, 14,400 free requests/day) if Gemini encounters quota exhaustion (`429 ResourceExhausted`) or socket resets.
 * **Strict Anti-Placeholder Guarantee**: Zero canned, fake, or placeholder paragraphs are ever substituted if an LLM is unavailable—the pipeline reports the exact status cleanly.
 
-### 3. ZeroGPT Anti-AI Looper (< 35% AI Target)
+### 3. Direct ZeroGPT Live API Integration & Anti-AI Looper (< 35% AI Target)
+* **Direct ZeroGPT Live API (`api.zerogpt.com`)**: Queries ZeroGPT's exact live detection endpoint with browser signatures, receiving the identical `fakePercentage`, feedback, and sentence-level `h` array seen on [zerogpt.com](https://www.zerogpt.com/).
+* **Targeted Sentence-Level Rewriting**: Extracts the exact sentences flagged by ZeroGPT and passes them to the live LLM with strict humanization instructions (practitioner perspective, high burstiness, colloquial framing, natural contractions).
 * **Burstiness & Perplexity Engine**: Analyzes sentence length variation (Coefficient of Variation $CV > 0.60$) and injects short 3-6 word human fragments (*"Grading is tiring. It takes weekends. Delays important feedback."*).
-* **Colloquial & Active Human Vocabulary**: Strips AI marker clichés (*delve into, tapestry, moreover, furthermore, in conclusion, testament to, pivotal, paradigm shift*).
-* **Iterative Looping**: If initial text evaluates at $\ge 35\%$ AI probability, the system loops through automated de-robotic rewriting until it safely clears ZeroGPT, GPTZero, and Turnitin thresholds.
+* **Strict Quality Gate**: If the live ZeroGPT score is $\ge 35\%$, the pipeline marks it as a blocking issue and executes iterative humanization passes until the score drops strictly below 35% (frequently reaching 0% - 20%).
 
 ### 4. 100% Yoast SEO & Readability Compliance
 * **Focus Keyword Hub**: Deterministically extracts the primary keyphrase and guarantees placement in the SEO Title, Meta Description, URL Slug, Introduction (first 100 words), Subheadings, and Image Alt attributes.

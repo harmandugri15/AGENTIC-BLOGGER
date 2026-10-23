@@ -185,55 +185,51 @@ Respond strictly in valid JSON without markdown wrapping or commentary:
         evidence_prompt = "\n".join([f"- {ev['evidence_tag']}: {ev['verbatim_quote']} (Source: {ev['source_title']}, {ev['source_url']})" for ev in evidence_pack[:4]])
         
         prompt = f"""
-You are a plain-spoken practitioner, veteran technology director, and human writer.
-Write a comprehensive, conversational, real-world enterprise guide on:
+You are a plain-spoken enterprise engineering director and veteran practitioner who has built and deployed real-world systems for over a decade.
+Write a comprehensive, authentic, deeply human conversational guide on:
 Topic: "{query}"
 Target Keywords: {seo_brief.get('primary_keywords', [])}
 Semantic Entities: {seo_brief.get('semantic_entities', [])}
 Recommended Outline: {seo_brief.get('recommended_h2_sections', [])}
 Brand Voice: {brand_tone}
 
-CRITICAL SEO & READABILITY RULES (MANDATORY TO ACHIEVE 100% YOAST SEO & HUMAN SCORES):
-1. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS. NEVER USE '#' ANYWHERE IN THE TEXT.
-   Format titles and major sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
-   Example format:
-   Best Use Cases of AI in Robotics: Practical Setups for Enterprise Leaders
-
-   [Intro paragraphs here]
-
+CRITICAL RULES TO ENSURE < 35% ZEROGPT SCORE & 100% YOAST SEO:
+1. VOICE & DIRECT PERSPECTIVE (CRITICAL TO PASS ZEROGPT AS HUMAN):
+   - Write from authentic direct practitioner observation ('In our deployments...', 'We tested three configurations before finding one that worked.', 'Our engineering teams discovered...', 'I have seen dozens of organizations struggle with this.').
+   - Treat the reader like a smart colleague having coffee.
+2. SENTENCE BURSTINESS & PUNCHY FRAGMENTS (DEFEATS AI PERPLEXITY DETECTORS):
+   - ZeroGPT flags uniform sentence lengths. You MUST deliberately vary sentence lengths.
+   - Scatter short 3 to 6 word punchy sentences across every section. Examples:
+     'It sounds simple.', 'It isn't.', 'Mistakes get costly.', 'The math works.', 'Nobody likes downtime.', 'That is a big deal.'
+3. NATURAL HUMAN CONTRACTIONS:
+   - Use natural contractions throughout: "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't".
+4. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS:
+   - Never use '#' anywhere. Format titles and major sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
+   Example:
+   BEST USE CASES OF AI IN HR DOCUMENTATION
+   [intro text]
    ---
-
-   1. VISION-GUIDED MANIPULATION AND EDGE COMPUTER VISION
-   [Section paragraphs here]
-
-2. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
-   - Keep paragraphs SHORT: 30 to 90 words per paragraph. NEVER write a paragraph longer than 120 words.
-   - Insert frequent subheadings so no section is longer than 250 words.
-
-3. TRANSITION WORDS (MINIMUM 30% OF SENTENCES):
-   - At least 30% of sentences MUST contain natural transition words (e.g., "For example,", "In addition,", "Specifically,", "Consequently,", "Because of this,", "In fact,", "On the other hand,", "Meanwhile,", "As a result,").
-
-4. READABILITY & PLAIN ENGLISH (FLESCH READING EASE >= 60):
-   - Average sentence length should be 12 to 16 words.
-   - Use simple words instead of corporate SAT buzzwords. Say "too much work" or "paperwork headache" instead of "administrative burden". Say "things that don't work" instead of "speculative pilots". Say "letting operators/engineers do their job" instead of "preserving autonomy".
-   - Inject short, punchy sentence fragments. E.g.: "Training robots is hard. It takes up months. Delays production."
-   - Use natural contractions (don't, can't, won't, it's).
-   - NEVER use AI clichés: "In today's fast-paced world", "delve into", "tapestry", "beacon of hope", "paradigm shift", "harnessing the power of".
-
-5. FOCUS KEYWORD IN CRITICAL REAL ESTATE:
-   - Weave the target topic/keyword naturally into the title, the very first paragraph (first 100 words), and at least two subheadings.
-
-6. STRICT EVIDENCE CITATIONS:
-   You MUST cite factual claims with explicit tags from this list: {tag_list[:3]}.
-7. Include a scannable ASCII architectural workflow diagram in a codeblock and practical implementation bullet points.
-8. Minimum 800 words.
+   1. AMBIENT WORKFLOWS AND DATA PIPELINES
+   [section text]
+5. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
+   - Keep paragraphs SHORT: 30 to 80 words per paragraph. NEVER write a paragraph longer than 110 words.
+   - Insert frequent subheadings so no section exceeds 220 words.
+6. TRANSITION WORDS (MINIMUM 30% OF SENTENCES):
+   - At least 30% of sentences must contain natural conversational transitions (e.g., "For example,", "In addition,", "Specifically,", "Because of this,", "In fact,", "On the other hand,", "Meanwhile,", "As a result,").
+7. ZERO CORPORATE AI BUZZWORDS:
+   - Never use: "delve into", "tapestry", "beacon of hope", "testament to", "paradigm shift", "harnessing the power", "plays a pivotal role", "rapidly evolving landscape", "in today's fast-paced world", "moreover", "furthermore", "in conclusion".
+8. FOCUS KEYWORD IN CRITICAL REAL ESTATE:
+   - Include the focus keyword naturally in the title, the very first paragraph (first 80 words), and at least two subheadings.
+9. EVIDENCE CITATIONS:
+   - Cite factual claims with explicit tags from this list: {tag_list[:3]}.
+10. Minimum 800 words, including an ASCII architecture diagram and practical bullet points.
 
 EVIDENCE PACK AVAILABLE FOR CITATION:
 {evidence_prompt}
 """
         raw_md = await asyncio.to_thread(self._call_gemini_with_fallback, prompt)
         
-        # Ensure zero '#' hashes
+        # Ensure zero '#' hashes and human touches
         md = self.humanizer.humanize_text(raw_md)
 
         first_line = [l.strip() for l in md.split("\n") if l.strip() and not l.strip().startswith("---")][0]
@@ -255,33 +251,49 @@ EVIDENCE PACK AVAILABLE FOR CITATION:
             "content_markdown": md
         }
 
-    async def rewrite_for_human_naturalness(self, draft_markdown: str, editorial_feedback: List[str]) -> str:
+    async def rewrite_for_human_naturalness(
+        self,
+        draft_markdown: str,
+        editorial_feedback: Optional[List[str]] = None,
+        flagged_sentences: Optional[List[str]] = None
+    ) -> str:
         """
         Rewrites the article using live LLM with an aggressive Anti-ZeroGPT prompt,
-        maximizing human burstiness and short punchy fragments to beat AI detectors under 35%.
+        specifically targeting flagged AI sentences to beat ZeroGPT with a score under 35%.
         """
-        prompt = f"""
-You are an expert human editor and veteran director. Rewrite this text so it reads 100% authentically human-written and passes ZeroGPT, GPTZero, and Turnitin with an AI score under 20%.
+        flagged_context = ""
+        if flagged_sentences:
+            flagged_context = f"""
+EXACT SENTENCES FLAGGED AS AI BY ZEROGPT (REWRITE THESE AGGRESSIVELY INTO SHORT, CASUAL HUMAN PHRASES):
+{json.dumps(flagged_sentences[:20], indent=2)}
+"""
 
-CRITICAL HUMAN CADENCE RULES (ZEROGPT BYPASS):
-1. INJECT SHORT PUNCHY HUMAN FRAGMENTS:
-   Scatter 3-6 word short sentences across paragraphs. Examples:
-   - "Grading is tiring. It takes up weekends. Delays important feedback."
-   - "It sounds simple on paper. It isn't."
+        prompt = f"""
+You are an expert human editor and veteran engineering director.
+ZeroGPT flagged this draft as AI-generated.
+Your mission: Rewrite this text so it scores UNDER 20% on ZeroGPT and reads completely like an authentic human practitioner wrote it.
+
+PROVEN TACTICS TO BEAT ZEROGPT:
+1. WRITE IN FIRST-PERSON PRACTITIONER VOICE:
+   Say 'In our experience...', 'We spent weeks troubleshooting...', 'Engineers often realize...', 'If you look at our logs...'
+2. MAXIMUM BURSTINESS (SHORT 3-6 WORD PUNCHES):
+   Scatter short 3-6 word sentences all across the paragraphs. Examples:
+   - "It sounds simple."
+   - "It isn't."
    - "Mistakes get expensive."
    - "Engineers hate this."
-2. RADICALLY VARY SENTENCE LENGTHS:
-   Mix short 4-word punches with 15-word conversational thoughts.
-3. USE NATURAL HUMAN CONTRACTIONS:
-   Use "don't", "can't", "it's", "doesn't", "we've", "they're" throughout.
-4. ZERO CORPORATE AI JARGON:
-   Never use "delve into", "tapestry", "moreover", "furthermore", "in conclusion", "harnessing", "paradigm shift", "testament to", "pivotal".
-5. STRICT CONSTRAINTS:
-   - Preserve all [EVID-xxx] evidence citations, factual claims, numbers, and code blocks.
-   - Strictly ZERO '#' or '##' markdown characters.
-   - Maintain the same section structure and focus keyword.
+   - "The math is clear."
+   - "Nobody likes downtime."
+3. NATURAL HUMAN CONTRACTIONS:
+   Use 'don't', 'can't', 'it's', 'doesn't', 'we've', 'they're', 'there's' everywhere.
+4. ZERO ROBOTIC CORPORATE FILLER:
+   Never use 'delve into', 'tapestry', 'beacon', 'testament', 'paradigm shift', 'pivotal', 'moreover', 'furthermore', 'in conclusion', 'rapidly evolving'.
+5. PRESERVE ESSENTIAL CONTENT:
+   - Strictly keep all [EVID-xxx] citation tags, numbers, statistics, and code blocks.
+   - Strictly ZERO '#' or '##' markdown characters. Keep headers as plain uppercase lines.
+{flagged_context}
 
-TEXT TO HUMANIZE:
+TEXT TO REWRITE:
 {draft_markdown}
 """
         try:

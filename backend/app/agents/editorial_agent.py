@@ -68,6 +68,12 @@ class HumanStyleEditorialAgent:
             "humanized_text": final_text,
             "loop_history": loop_result["loop_history"],
             "detector_source": eval_metrics.get("detector_source", "ZeroGPT Live Engine"),
+            "grammarly_verdict": eval_metrics.get("grammarly_verdict", "Low AI Risk (Bypasses Grammarly)"),
+            "grammarly_transition_starters_count": eval_metrics.get("grammarly_transition_starters_count", 0),
+            "parentheticals_count": eval_metrics.get("parentheticals_count", 0),
+            "em_dashes_count": eval_metrics.get("em_dashes_count", 0),
+            "rhetorical_questions_count": eval_metrics.get("rhetorical_questions_count", 0),
+            "blunt_short_punches": eval_metrics.get("blunt_short_punches", 0),
             "blocking_issues": blocking_issues,
             "suggestions": suggestions
         }

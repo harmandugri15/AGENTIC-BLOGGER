@@ -54,7 +54,21 @@ class HumanizerEngine:
         (r"\bit\s+is\s+worth\s+noting\s+that\b", "importantly,"),
         (r"\bit\s+should\s+be\s+noted\s+that\b", "importantly,"),
         (r"\bserve(s)?\s+as\s+a\s+foundation\b", "acts as a base"),
-        (r"\bholds\s+significant\s+promise\b", "shows real promise")
+        (r"\bholds\s+significant\s+promise\b", "shows real promise"),
+        # Grammarly AI Trigger Transitions (Sentence-Initial Formal Words)
+        (r"(^|[\.\?!]\s+)Consequently,?\s*", r"\1And because of that, "),
+        (r"(^|[\.\?!]\s+)In addition,?\s*", r"\1Also, "),
+        (r"(^|[\.\?!]\s+)Specifically,?\s*", r"\1In particular, "),
+        (r"(^|[\.\?!]\s+)Because of this,?\s*", r"\1So "),
+        (r"(^|[\.\?!]\s+)Because of this efficiency,?\s*", r"\1And with that efficiency, "),
+        (r"(^|[\.\?!]\s+)On the other hand,?\s*", r"\1Still, "),
+        (r"(^|[\.\?!]\s+)Meanwhile,?\s*", r"\1At the same time, "),
+        (r"(^|[\.\?!]\s+)As a result,?\s*", r"\1So "),
+        (r"(^|[\.\?!]\s+)In fact,?\s*", r"\1Actually, "),
+        (r"(^|[\.\?!]\s+)Ultimately,?\s*", r"\1In the end, "),
+        (r"(^|[\.\?!]\s+)Needless to say,?\s*", r"\1Naturally, "),
+        (r"(^|[\.\?!]\s+)With that being said,?\s*", r"\1Still, "),
+        (r"(^|[\.\?!]\s+)In light of this,?\s*", r"\1So ")
     ]
 
     def __init__(self):

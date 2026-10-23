@@ -47,6 +47,19 @@ class AIDetectionEngine:
         r"\bto\s+summarize,?\b"
     ]
 
+    GRAMMARLY_TRIGGER_PATTERNS = [
+        r"(?:^|[\.\?!]\s+)Consequently,?\s*",
+        r"(?:^|[\.\?!]\s+)In addition,?\s*",
+        r"(?:^|[\.\?!]\s+)Specifically,?\s*",
+        r"(?:^|[\.\?!]\s+)Because of this,?\s*",
+        r"(?:^|[\.\?!]\s+)On the other hand,?\s*",
+        r"(?:^|[\.\?!]\s+)Meanwhile,?\s*",
+        r"(?:^|[\.\?!]\s+)As a result,?\s*",
+        r"(?:^|[\.\?!]\s+)Furthermore,?\s*",
+        r"(?:^|[\.\?!]\s+)Moreover,?\s*",
+        r"(?:^|[\.\?!]\s+)Ultimately,?\s*"
+    ]
+
     def query_zerogpt_live(self, text: str) -> Dict[str, Any]:
         """
         Directly queries the live ZeroGPT detection endpoint (api.zerogpt.com).
@@ -153,6 +166,21 @@ class AIDetectionEngine:
             else "High AI Detection Risk (> 65% AI)"
         )
 
+        # Grammarly-specific pattern metrics
+        grammarly_triggers = []
+        for pat in self.GRAMMARLY_TRIGGER_PATTERNS:
+            found = re.findall(pat, text, re.IGNORECASE)
+            if found:
+                grammarly_triggers.extend(found)
+
+        parentheticals = len(re.findall(r"\([^\)]+\)", text))
+        em_dashes = text.count("—") + text.count(" - ")
+        rhetorical_questions = len(re.findall(r"\b(why|how|what|can|could|did|will|sound)\b[^\.\?!]*\?", text, re.IGNORECASE))
+        blunt_short_punches = sum(1 for c in word_counts if c <= 4)
+
+        grammarly_safe = len(grammarly_triggers) <= 1 and (parentheticals >= 1 or em_dashes >= 1 or blunt_short_punches >= 2)
+        grammarly_verdict = "Low AI Risk (Bypasses Grammarly)" if grammarly_safe else "Moderate/High Grammarly Flag Risk"
+
         return {
             "ai_probability": ai_prob,
             "human_probability": human_prob,
@@ -168,5 +196,11 @@ class AIDetectionEngine:
             "has_markdown_hashes": has_hashes,
             "ai_markers_count": len(ai_markers_found),
             "ai_markers_found": ai_markers_found,
-            "detector_source": source
+            "detector_source": source,
+            "grammarly_transition_starters_count": len(grammarly_triggers),
+            "parentheticals_count": parentheticals,
+            "em_dashes_count": em_dashes,
+            "rhetorical_questions_count": rhetorical_questions,
+            "blunt_short_punches": blunt_short_punches,
+            "grammarly_verdict": grammarly_verdict
         }

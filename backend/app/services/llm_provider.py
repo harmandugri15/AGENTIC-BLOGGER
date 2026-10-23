@@ -185,25 +185,29 @@ Respond strictly in valid JSON without markdown wrapping or commentary:
         evidence_prompt = "\n".join([f"- {ev['evidence_tag']}: {ev['verbatim_quote']} (Source: {ev['source_title']}, {ev['source_url']})" for ev in evidence_pack[:4]])
         
         prompt = f"""
-You are a plain-spoken enterprise engineering director and veteran practitioner who has built and deployed real-world systems for over a decade.
-Write a comprehensive, authentic, deeply human conversational guide on:
-Topic: "{query}"
-Target Keywords: {seo_brief.get('primary_keywords', [])}
-Semantic Entities: {seo_brief.get('semantic_entities', [])}
-Recommended Outline: {seo_brief.get('recommended_h2_sections', [])}
-Brand Voice: {brand_tone}
+You are a candid, battle-tested enterprise engineering director and veteran practitioner writing for fellow professionals.
+Your top priority: The text MUST score under 15% on Grammarly AI Detector and ZeroGPT by reading 100% authentically human.
 
-CRITICAL RULES TO ENSURE < 35% ZEROGPT SCORE & 100% YOAST SEO:
-1. VOICE & DIRECT PERSPECTIVE (CRITICAL TO PASS ZEROGPT AS HUMAN):
-   - Write from authentic direct practitioner observation ('In our deployments...', 'We tested three configurations before finding one that worked.', 'Our engineering teams discovered...', 'I have seen dozens of organizations struggle with this.').
-   - Treat the reader like a smart colleague having coffee.
-2. SENTENCE BURSTINESS & PUNCHY FRAGMENTS (DEFEATS AI PERPLEXITY DETECTORS):
-   - ZeroGPT flags uniform sentence lengths. You MUST deliberately vary sentence lengths.
-   - Scatter short 3 to 6 word punchy sentences across every section. Examples:
-     'It sounds simple.', 'It isn't.', 'Mistakes get costly.', 'The math works.', 'Nobody likes downtime.', 'That is a big deal.'
-3. NATURAL HUMAN CONTRACTIONS:
-   - Use natural contractions throughout: "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't".
-4. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS:
+CORE GRAMMARLY & ZEROGPT ANTI-DETECTION BLUEPRINT:
+1. NEVER USE FORMULAIC TRANSITION STARTERS (GRAMMARLY'S #1 AI TRIGGER):
+   - ABSOLUTELY DO NOT start sentences with: "In addition,", "Consequently,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,".
+   - INSTEAD, use natural conversational transitions: Start sentences with "And", "But", "So", "Still", "Yet", "Instead", "Which means".
+   - Or embed transitions inside the sentence: "Our team, however, took a different approach." "That works, of course, until traffic spikes."
+
+2. BREAK SYNTACTIC SYMMETRY (DESTROY MONOTONOUS AI RHYTHM):
+   - Drop in 2-4 word blunt punches: "We were wrong.", "Big mistake.", "Not even close.", "It fails right there.", "That hurts.", "Here is the catch."
+   - Include 2-3 candid parenthetical asides: "(and yes, we learned that the hard way)", "(which our VP hated)", "(usually around 2 AM on a Friday)".
+   - Use em-dashes for natural human pauses: "The real bottleneck — not the shiny vendor slide deck — is messy source data."
+   - Ask 2-3 rhetorical questions and answer them immediately: "Why does this happen? Because legacy portals are built like mazes." "Sound familiar?"
+
+3. CONCRETE, GROUNDED REAL-WORLD FRICTION:
+   - Talk about messy reality: corrupted PDFs, angry employees, broken search queries, late-night Slack messages, compliance reviews.
+   - Speak in first-person plural and singular ("In our production rollout...", "I watched our team spend four days debugging...", "We learned the hard way...").
+
+4. NATURAL HUMAN CONTRACTIONS:
+   - Use "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't" throughout.
+
+5. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS:
    - Never use '#' anywhere. Format titles and major sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
    Example:
    BEST USE CASES OF AI IN HR DOCUMENTATION
@@ -211,15 +215,17 @@ CRITICAL RULES TO ENSURE < 35% ZEROGPT SCORE & 100% YOAST SEO:
    ---
    1. AMBIENT WORKFLOWS AND DATA PIPELINES
    [section text]
-5. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
+
+6. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
    - Keep paragraphs SHORT: 30 to 80 words per paragraph. NEVER write a paragraph longer than 110 words.
    - Insert frequent subheadings so no section exceeds 220 words.
-6. TRANSITION WORDS (MINIMUM 30% OF SENTENCES):
-   - At least 30% of sentences must contain natural conversational transitions (e.g., "For example,", "In addition,", "Specifically,", "Because of this,", "In fact,", "On the other hand,", "Meanwhile,", "As a result,").
+
 7. ZERO CORPORATE AI BUZZWORDS:
-   - Never use: "delve into", "tapestry", "beacon of hope", "testament to", "paradigm shift", "harnessing the power", "plays a pivotal role", "rapidly evolving landscape", "in today's fast-paced world", "moreover", "furthermore", "in conclusion".
+   - Never use: "delve into", "tapestry", "beacon of hope", "testament to", "paradigm shift", "harnessing the power", "plays a pivotal role", "rapidly evolving landscape", "in today's fast-paced world".
+
 8. FOCUS KEYWORD IN CRITICAL REAL ESTATE:
    - Include the focus keyword naturally in the title, the very first paragraph (first 80 words), and at least two subheadings.
+
 9. EVIDENCE CITATIONS:
    - Cite factual claims with explicit tags from this list: {tag_list[:3]}.
 10. Minimum 800 words, including an ASCII architecture diagram and practical bullet points.
@@ -270,25 +276,31 @@ EXACT SENTENCES FLAGGED AS AI BY ZEROGPT (REWRITE THESE AGGRESSIVELY INTO SHORT,
 
         prompt = f"""
 You are an expert human editor and veteran engineering director.
-ZeroGPT flagged this draft as AI-generated.
-Your mission: Rewrite this text so it scores UNDER 20% on ZeroGPT and reads completely like an authentic human practitioner wrote it.
+AI detection scanners (Grammarly AI Detector and ZeroGPT) flagged this draft as AI-generated.
+Your mission: Rewrite this text so it scores UNDER 15% on Grammarly AI Detector and ZeroGPT.
 
-PROVEN TACTICS TO BEAT ZEROGPT:
-1. WRITE IN FIRST-PERSON PRACTITIONER VOICE:
-   Say 'In our experience...', 'We spent weeks troubleshooting...', 'Engineers often realize...', 'If you look at our logs...'
-2. MAXIMUM BURSTINESS (SHORT 3-6 WORD PUNCHES):
-   Scatter short 3-6 word sentences all across the paragraphs. Examples:
-   - "It sounds simple."
-   - "It isn't."
-   - "Mistakes get expensive."
-   - "Engineers hate this."
-   - "The math is clear."
-   - "Nobody likes downtime."
-3. NATURAL HUMAN CONTRACTIONS:
-   Use 'don't', 'can't', 'it's', 'doesn't', 'we've', 'they're', 'there's' everywhere.
-4. ZERO ROBOTIC CORPORATE FILLER:
-   Never use 'delve into', 'tapestry', 'beacon', 'testament', 'paradigm shift', 'pivotal', 'moreover', 'furthermore', 'in conclusion', 'rapidly evolving'.
-5. PRESERVE ESSENTIAL CONTENT:
+TACTICS TO DEFEAT GRAMMARLY & ZEROGPT:
+1. ELIMINATE FORMULAIC TRANSITION STARTERS (GRAMMARLY'S #1 AI TRIGGER):
+   - Replace any sentence beginning with "Consequently,", "In addition,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,".
+   - Start with natural human words: "And", "But", "So", "Still", "Yet", "Instead", "Which means".
+   - Or place transitions inside the sentence: "Our team, however, took a different approach."
+
+2. BREAK SENTENCE SYMMETRY & INJECT ASYMMETRY:
+   - Drop in 2-4 word blunt punches: "It works.", "Not quite.", "Big mistake.", "Here is why.", "Nobody warned us."
+   - Insert 2 candid parenthetical asides: "(and yes, we learned that the hard way)", "(which our VP hated)".
+   - Use em-dashes for human pacing: "The real bottleneck — not the shiny vendor slide deck — is messy source data."
+   - Ask 1-2 rhetorical questions and answer them immediately: "Why does this happen? Because legacy portals are built like mazes."
+
+3. FIRST-PERSON PRACTITIONER CONTEXT:
+   - Say 'In our deployments...', 'We spent weeks troubleshooting...', 'Engineers often realize...', 'If you look at our logs...'
+
+4. NATURAL HUMAN CONTRACTIONS:
+   - Use 'don't', 'can't', 'it's', 'doesn't', 'we've', 'they're', 'there's' everywhere.
+
+5. ZERO ROBOTIC CORPORATE FILLER:
+   - Never use 'delve into', 'tapestry', 'beacon', 'testament', 'paradigm shift', 'pivotal', 'moreover', 'furthermore', 'in conclusion', 'rapidly evolving'.
+
+6. PRESERVE ESSENTIAL CONTENT:
    - Strictly keep all [EVID-xxx] citation tags, numbers, statistics, and code blocks.
    - Strictly ZERO '#' or '##' markdown characters. Keep headers as plain uppercase lines.
 {flagged_context}

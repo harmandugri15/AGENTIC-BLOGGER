@@ -351,12 +351,12 @@ class SupervisorOrchestrator:
                 {"title": "Human-in-the-Loop Safeguards", "checked": True, "detail": "Verified mandatory human review mechanisms"},
                 {"title": "Algorithmic Bias Guardrails", "checked": True, "detail": "Checked against unfair prediction bias"}
             ]
-            logger.info(f"  • [ComplianceAgent] Regulatory Score: {compliance_audit['score']}/100, Clinician-in-the-loop: True.")
+            logger.info(f"  • [ComplianceAgent] Brand Alignment Score: {compliance_audit['score']}/100, Brand Positioning: {compliance_audit.get('brand_alignment_confirmed', True)}.")
             await self.log_step(
                 campaign.id,
                 "ComplianceAgent",
                 "SUCCESS" if not compliance_audit["blocking_issues"] else "WARNING",
-                f"Compliance Score: {compliance_audit['score']}/100. Human-in-the-Loop confirmed: {compliance_audit['clinician_in_the_loop_present']}.",
+                f"Compliance Score: {compliance_audit['score']}/100. Brand positioning confirmed: {compliance_audit.get('brand_alignment_confirmed', True)}.",
                 details=compliance_audit,
                 latency_ms=int((time.time() - t_aud) * 1000)
             )

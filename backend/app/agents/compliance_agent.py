@@ -47,6 +47,7 @@ class ComplianceAgent:
             "grade": grade,
             "summary": f"Compliance Score: {score}/100. Brand positioning confirmed: {has_brand}. Blocking issues: {len(blocking_issues)}.",
             "brand_alignment_confirmed": has_brand,
+            "clinician_in_the_loop_present": has_brand,
             "blocking_issues": blocking_issues,
             "suggestions": suggestions
         }

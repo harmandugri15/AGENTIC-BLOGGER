@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGENTIC-BLOGGER • System Architecture & Multi-Agent Flowchart</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.3; transform: scale(0.98); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    @keyframes flowDot {
+      0% { stroke-dashoffset: 40; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .flow-line {
+      stroke-dasharray: 6 6;
+      animation: flowDot 1.2s linear infinite;
+    }
+    .node-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+    }
+    .active-stage {
+      ring: 2px solid #0284c7;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.35);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased p-4 md:p-8">
+
+  <div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- HEADER & TITLE BAR -->
+    <header class="bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 font-black text-sm border border-sky-400/30">
+            AG
+          </span>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+            AGENTIC-BLOGGER Architecture Flowchart
+          </h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            Production Ready
+          </span>
+        </div>
+        <p class="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl">
+          Visual multi-agent DAG showing autonomous evidence retrieval across 5 live public APIs, dual LLM orchestration, Yoast 100% green checks, and the ZeroGPT Anti-AI Looper.
+        </p>
+      </div>
+
+      <!-- SIMULATION CONTROLS -->
+      <div class="flex items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-700">
+        <button id="btnPlay" onclick="toggleSimulation()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1.5 transition">
+          <span id="playIcon">▶</span> <span id="playText">Simulate Flow</span>
+        </button>
+        <button onclick="resetSimulation()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          Reset
+        </button>
+        <div class="h-5 w-px bg-slate-700 mx-1"></div>
+        <span id="simStatus" class="text-xs font-mono text-slate-400 px-1">
+          Idle • Click any step to inspect
+        </span>
+      </div>
+    </header>
+
+    <!-- INTERACTIVE FILTER TABS -->
+    <div class="flex flex-wrap gap-2 text-xs">
+      <button onclick="filterCategory('all')" class="filter-btn px-3.5 py-1.5 rounded-lg font-bold bg-sky-600 text-white transition cursor-pointer" data-cat="all">
+        All Stages (Complete Architecture)
+      </button>
+      <button onclick="filterCategory('apis')" class="filter-btn px-3.5 py-1.5 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer" data-cat="apis">
+        5 Live Public APIs
+      </button>
+      <button onclick="filterCategory('seo')" class="filter-btn px-3.5 py-1.5 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer" data-cat="seo">
+        Yoast SEO & Readability Engine
+      </button>
+      <button onclick="filterCategory('anti-ai')" class="filter-btn px-3.5 py-1.5 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer" data-cat="anti-ai">
+        ZeroGPT Anti-AI Looper (< 35% AI)
+      </button>
+      <button onclick="filterCategory('gates')" class="filter-btn px-3.5 py-1.5 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer" data-cat="gates">
+        5 Quality Audit Gates
+      </button>
+    </div>
+
+    <!-- MAIN FLOWCHART CANVAS & LAYOUT -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- LEFT: FLOWCHART STEPS (8 COLS) -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- STEP 1: USER PROMPT & SUPERVISOR ORCHESTRATOR -->
+        <div id="step-1" onclick="inspectStep(1)" class="node-card bg-slate-800 border-2 border-sky-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500 text-white font-black text-xs flex items-center justify-center shadow">
+                1
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  Supervisor Orchestrator & Campaign Directive
+                </h3>
+                <p class="text-xs text-sky-400 font-mono">SupervisorOrchestrator.run_campaign_pipeline()</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+              Input & DAG Router
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Ingests user campaign directives across any domain (Robotics, Education, HR, Healthcare, Finance). Parses prompt intent, resolves DAG task dependencies, configures concurrency, and starts real-time SSE/polling telemetry for frontend subscribers.
+          </p>
+
+          <div class="mt-3 pt-3 border-t border-slate-700/80 flex flex-wrap gap-2 text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300">✓ Domain Sanitization</span>
+            <span class="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300">✓ Task DAG Resolution</span>
+            <span class="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300">✓ Live Telemetry Dispatch</span>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 1 -> 2 -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#0284c7" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#0284c7" />
+          </svg>
+        </div>
+
+        <!-- STEP 2: RESEARCH AGENT (5 REAL PUBLIC APIS) -->
+        <div id="step-2" onclick="inspectStep(2)" class="node-card bg-slate-800 border-2 border-emerald-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all apis">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500 text-white font-black text-xs flex items-center justify-center shadow">
+                2
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  ResearchAgent (5 Live Public REST APIs)
+                </h3>
+                <p class="text-xs text-emerald-400 font-mono">PublicAPIsHub • Zero Canned Data</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Knowledge Ingestion
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Simultaneously queries 5 real, public web endpoints from the <code class="text-sky-300">public-apis</code> repository to extract real scholarly literature, canonical encyclopedic definitions, preprints, and developer discussions.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono">
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-700/80 flex items-center gap-1.5">
+              <span class="text-emerald-400">●</span> <span>Wikipedia REST</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-700/80 flex items-center gap-1.5">
+              <span class="text-emerald-400">●</span> <span>OpenAlex 250M+</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-700/80 flex items-center gap-1.5">
+              <span class="text-emerald-400">●</span> <span>ArXiv Preprints</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-700/80 flex items-center gap-1.5">
+              <span class="text-emerald-400">●</span> <span>HackerNews Algolia</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-700/80 flex items-center gap-1.5">
+              <span class="text-emerald-400">●</span> <span>Datamuse Semantic</span>
+            </div>
+            <div class="p-2 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5">
+              <span>✓ [EVID-xxx] Tagged</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 2 -> 3 -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#10b981" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#10b981" />
+          </svg>
+        </div>
+
+        <!-- STEP 3: SEO INTELLIGENCE AGENT -->
+        <div id="step-3" onclick="inspectStep(3)" class="node-card bg-slate-800 border-2 border-indigo-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all seo">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-indigo-500 text-white font-black text-xs flex items-center justify-center shadow">
+                3
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  SEOIntelligenceAgent (Intent & Datamuse LSI)
+                </h3>
+                <p class="text-xs text-indigo-400 font-mono">SEOIntelligenceAgent.execute()</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              SERP & Intent Analysis
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Analyzes competitor ranking matrices and content voids. Extracts the canonical <strong>Focus Keyword</strong>, harvests LSI vectors from Datamuse, and calibrates SERP Meta Title (40-65 chars) & Meta Description (120-155 chars).
+          </p>
+
+          <div class="mt-2 flex flex-wrap gap-2 text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-500/30">Focus Keyword Extraction</span>
+            <span class="px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-500/30">Competitor Gap Matrix</span>
+            <span class="px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-500/30">1.0% - 2.5% Density Bounds</span>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 3 -> 4 -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#6366f1" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#6366f1" />
+          </svg>
+        </div>
+
+        <!-- STEP 4: WRITER AGENT (DUAL LLM ENGINE) -->
+        <div id="step-4" onclick="inspectStep(4)" class="node-card bg-slate-800 border-2 border-purple-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-purple-500 text-white font-black text-xs flex items-center justify-center shadow">
+                4
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  WriterAgent (Dual LLM Engine: Gemini + Groq)
+                </h3>
+                <p class="text-xs text-purple-400 font-mono">Zero Canned Content • Live Generation</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              Evidence Grounding
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Drafts deep practitioner guides (>800 words) using Google Gemini or falling back seamlessly to Groq Llama 3.3 70B (14,400 free req/day). All claims are strictly anchored to verified <code class="text-sky-300">[EVID-xxx]</code> citations. Enforces scannable ASCII workflow diagrams and clean numbered uppercase section headers.
+          </p>
+
+          <div class="flex items-center gap-2 text-xs font-semibold">
+            <span class="px-2.5 py-1 rounded-md bg-purple-950 border border-purple-500/40 text-purple-200">
+              🚫 STRICTLY ZERO '#' HASHTAG HEADINGS
+            </span>
+            <span class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 text-slate-300">
+              ASCII Workflow Included
+            </span>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 4 -> 5 -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#a855f7" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#a855f7" />
+          </svg>
+        </div>
+
+        <!-- STEP 5: 5 PARALLEL QUALITY AUDIT GATES -->
+        <div id="step-5" onclick="inspectStep(5)" class="node-card bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all gates seo anti-ai">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center shadow">
+                5
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  Parallel Quality Audit Gates (5 Specialized Subagents)
+                </h3>
+                <p class="text-xs text-amber-400 font-mono">Factuality • Yoast SEO • Grammar • ZeroGPT • Compliance</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              Multi-Gate Audit
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs mt-3">
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-700">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>1. FactualityAgent</span>
+                <span class="text-emerald-400">0 Hallucinations</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Cross-examines [EVID-xxx] against source chunks.</p>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-700">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>2. SEOReviewAgent</span>
+                <span class="text-emerald-400">100% Yoast Green</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Density 1.0-2.5%, subheadings < 250w, paragraph < 120w.</p>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-700">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>3. GrammarAgent</span>
+                <span class="text-emerald-400">Flesch >= 60.0</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Plain English reading ease, passive voice < 10%.</p>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-700">
+              <div class="font-bold text-white flex items-center justify-between">
+                <span>4. EditorialAgent (ZeroGPT)</span>
+                <span class="text-emerald-400">AI Risk < 35%</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Sentence burstiness CV > 0.60, contractions, short fragments.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 5 -> 6 (DECISION FORK) -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#f59e0b" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#f59e0b" />
+          </svg>
+        </div>
+
+        <!-- STEP 6: DECISION FORK & ANTI-AI REVISION LOOP -->
+        <div id="step-6" onclick="inspectStep(6)" class="node-card bg-slate-800 border-2 border-rose-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all anti-ai">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-rose-500 text-white font-black text-xs flex items-center justify-center shadow">
+                6
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  ZeroGPT Anti-AI Looper & Auto-Optimizer Gate
+                </h3>
+                <p class="text-xs text-rose-400 font-mono">Convergence Rule: AI Score < 35% & Yoast 100%</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+              Iterative Revision Loop
+            </span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4 text-xs">
+            <div class="flex-1 p-3 rounded-lg bg-rose-950/40 border border-rose-500/30">
+              <span class="font-bold text-rose-300">IF AI Score >= 35% OR Issues Found:</span>
+              <p class="text-slate-300 mt-1">
+                Triggers automated de-robotic rewrite with live LLM. Injects short human fragments, removes AI clichés, injects transitions, and repeats loop.
+              </p>
+            </div>
+            <div class="flex-1 p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/30">
+              <span class="font-bold text-emerald-300">IF AI Score < 35% & All Gates Green:</span>
+              <p class="text-slate-300 mt-1">
+                Passes draft to Rich Internal Linker and ContentFormatAgent for final publication bundling.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTOR 6 -> 7 -->
+        <div class="flex justify-center -my-3">
+          <svg width="24" height="28" viewBox="0 0 24 28">
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#10b981" stroke-width="2.5" class="flow-line" />
+            <polygon points="6,20 12,28 18,20" fill="#10b981" />
+          </svg>
+        </div>
+
+        <!-- STEP 7: RICH INTERNAL LINKS & ASSET FORMATTER -->
+        <div id="step-7" onclick="inspectStep(7)" class="node-card bg-slate-800 border-2 border-emerald-500/50 rounded-2xl p-5 cursor-pointer relative" data-category="all seo">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center shadow">
+                7
+              </span>
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  Rich Internal Linking & ContentFormatAgent
+                </h3>
+                <p class="text-xs text-emerald-400 font-mono">Multi-Format Derivative Asset Package</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Asset Packaging
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Injects 3-4 contextual internal links (<code class="text-sky-300">/solutions/enterprise-rag</code>, <code class="text-sky-300">/compliance/data-privacy</code>) and compiles 6 derivative formats:
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-semibold text-slate-300">
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ Clean Plain Markdown</div>
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ CMS Markdown with H2s</div>
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ Executive Briefing</div>
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ LinkedIn Thought Post</div>
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ Newsletter Teaser</div>
+            <div class="p-1.5 rounded bg-slate-900 border border-slate-700">✓ Key Takeaways FAQ</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: DEEP INSPECTOR & CODE/PAYLOAD VIEWER (4 COLS) -->
+      <div class="lg:col-span-4 sticky top-6 space-y-4">
+
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-700">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+              <h4 id="inspectorTitle" class="text-xs font-bold uppercase tracking-wider text-white">
+                Step 1 • Supervisor Orchestrator
+              </h4>
+            </div>
+            <span id="inspectorStage" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-700 text-sky-300">
+              Stage 1 of 7
+            </span>
+          </div>
+
+          <div id="inspectorContent" class="space-y-4 text-xs">
+            <div>
+              <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1">What Exactly Happens Here:</h5>
+              <p class="text-slate-300 leading-relaxed bg-slate-900/80 p-3 rounded-lg border border-slate-700/80">
+                The Supervisor parses the incoming target query (e.g. "Create a blog on the use of RAG in HR documentation"). It initializes the database campaign record, configures agent concurrency, establishes error boundaries, and activates live 1-second polling intervals for the React frontend.
+              </p>
+            </div>
+
+            <div>
+              <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1.5">Checkpoints Verified (✓):</h5>
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 p-2 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-300">
+                  <span>✓</span> <span>Input sanitization & brand tone lock</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-300">
+                  <span>✓</span> <span>Dynamic Execution DAG generation</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-300">
+                  <span>✓</span> <span>Subagent routing & budget allocation</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1">Live Endpoint / Code Reference:</h5>
+              <pre class="p-2.5 rounded bg-slate-950 text-sky-400 font-mono text-[11px] overflow-x-auto border border-slate-800">
+POST /api/v1/campaigns/{id}/execute
+backend/app/agents/supervisor.py</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE ZEROGPT & YOAST INTERACTIVE SIMULATOR CARD -->
+        <div class="bg-gradient-to-br from-slate-800 to-slate-850 border border-slate-700 rounded-2xl p-5 shadow-xl text-xs space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-700">
+            <h4 class="font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+              <span>⚡</span> Quality Gate Simulator
+            </h4>
+            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/30">Live Calculator</span>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1 text-[11px]">
+              <span class="text-slate-400">Sentence Burstiness (CV):</span>
+              <span id="valCV" class="font-mono font-bold text-emerald-400">0.72 (High Human)</span>
+            </div>
+            <input type="range" min="20" max="100" value="72" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer" oninput="updateSimMetrics(this.value)">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1 font-mono text-[11px]">
+            <div class="p-2 rounded bg-slate-900 border border-slate-700 text-center">
+              <div class="text-slate-400 text-[10px]">ZeroGPT Score</div>
+              <div id="simZeroGPT" class="text-sm font-black text-emerald-400">18.2% AI</div>
+              <div class="text-[9px] text-emerald-500">Safe (< 35%)</div>
+            </div>
+            <div class="p-2 rounded bg-slate-900 border border-slate-700 text-center">
+              <div class="text-slate-400 text-[10px]">Flesch Ease</div>
+              <div id="simFlesch" class="text-sm font-black text-emerald-400">66.4</div>
+              <div class="text-[9px] text-emerald-500">Plain English</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const stepDetails = {
+      1: {
+        title: "Step 1 • Supervisor Orchestrator",
+        stage: "Stage 1 of 7",
+        desc: "The Supervisor parses the incoming target query (e.g. 'Create a blog on the use of RAG in HR documentation'). It initializes the database campaign record, configures agent concurrency, establishes error boundaries, and activates live 1-second polling intervals for the React frontend.",
+        checkpoints: [
+          "Input parameter validation & prompt sanitization",
+          "Dynamic DAG task dependency resolution",
+          "Agent resource allocation & timeout budgets",
+          "Initial state reset (prevents stale drafts from showing)"
+        ],
+        code: "POST /api/v1/campaigns/{id}/execute\nbackend/app/agents/supervisor.py"
+      },
+      2: {
+        title: "Step 2 • ResearchAgent (5 Real Public APIs)",
+        stage: "Stage 2 of 7",
+        desc: "Simultaneously queries 5 live endpoints from github.com/public-apis: Wikipedia REST API for canonical summaries, OpenAlex for 250M+ peer-reviewed works, ArXiv for cutting-edge preprints, HackerNews Algolia for developer discussions, and Datamuse for semantic LSI vectors. Zero canned data.",
+        checkpoints: [
+          "Wikipedia REST API queried for canonical definitions",
+          "OpenAlex 250M+ scholarly works queried for citations",
+          "ArXiv Preprints API queried for whitepapers",
+          "HackerNews Algolia API queried for developer discourse",
+          "Datamuse Semantic Engine queried for LSI vocabulary",
+          "Evidence pack compiled with strict [EVID-xxx] tags"
+        ],
+        code: "backend/app/agents/research_agent.py\nbackend/app/services/public_apis.py"
+      },
+      3: {
+        title: "Step 3 • SEOIntelligenceAgent",
+        stage: "Stage 3 of 7",
+        desc: "Extracts canonical Focus Keyword (e.g. 'RAG in HR Documentation'), generates 3-competitor gap matrix, maps topical LSI entities, and calibrates SERP Meta Title (40-65 chars) & Meta Description (120-155 chars) for 100% Yoast compliance.",
+        checkpoints: [
+          "Canonical focus keyword extracted & locked",
+          "Competitor content gap matrix evaluated",
+          "Datamuse LSI topical vectors mapped",
+          "SERP Title (40-65) & Meta Description (120-155) calibrated",
+          "Yoast 1.0% - 2.5% density guardrails initialized"
+        ],
+        code: "backend/app/agents/seo_agent.py\nbackend/app/services/yoast_seo_engine.py"
+      },
+      4: {
+        title: "Step 4 • WriterAgent (Dual LLM Engine)",
+        stage: "Stage 4 of 7",
+        desc: "Drafts comprehensive technical article (>800 words) using Google Gemini or auto-falling back to Groq Llama 3.3 70B (14,400 free req/day). Grounded strictly in [EVID-xxx] citation tags with an ASCII architecture diagram. Strictly ZERO '#' markdown hash characters.",
+        checkpoints: [
+          "Deep practitioner draft generated (>800 words)",
+          "Zero '#' markdown hashes enforced (numbered uppercase lines)",
+          "Core technical claims grounded to [EVID-xxx] citations",
+          "ASCII architecture workflow diagram in codeblock",
+          "Focus keyword embedded in Title, Intro, and H2s"
+        ],
+        code: "backend/app/agents/writer_agent.py\nbackend/app/services/llm_provider.py"
+      },
+      5: {
+        title: "Step 5 • Parallel Quality Audit Gates",
+        stage: "Stage 5 of 7",
+        desc: "Runs 5 specialized subagents in parallel: FactualityAgent (0 hallucinations), SEOReviewAgent (100% Yoast green checks), GrammarAgent (Flesch >= 60.0), EditorialAgent (ZeroGPT burstiness & contractions), and ComplianceAgent (FERPA/HIPAA/ISO guardrails).",
+        checkpoints: [
+          "Factuality: 100% citations verified against chunks",
+          "SEO: Keyphrase in Title, Meta, Intro & H2s verified",
+          "Grammar: Flesch Reading Ease >= 60.0 (Plain English)",
+          "Editorial: Burstiness CV > 0.60 & natural contractions",
+          "Compliance: Human-in-the-Loop oversight confirmed"
+        ],
+        code: "backend/app/agents/factuality_agent.py\nbackend/app/agents/seo_review_agent.py\nbackend/app/agents/editorial_agent.py"
+      },
+      6: {
+        title: "Step 6 • ZeroGPT Anti-AI Looper & Auto-Optimizer",
+        stage: "Stage 6 of 7",
+        desc: "If ZeroGPT AI score is >= 35.0% or Yoast issues exist, triggers an automated de-robotic rewrite cycle with live LLM. Injects short punchy human fragments ('Grading is tiring. It takes weekends.'), natural contractions, and loops until AI detection score is strictly < 35%.",
+        checkpoints: [
+          "ZeroGPT cliché purge ('delve', 'tapestry', 'moreover')",
+          "High sentence burstiness variation injected",
+          "Conversational human contractions guaranteed",
+          "Yoast subheadings (<250w) & paragraphs (<120w) split",
+          "Loop convergence confirmed (< 35% AI score)"
+        ],
+        code: "backend/app/services/ai_detector.py\nbackend/app/services/humanizer.py"
+      },
+      7: {
+        title: "Step 7 • ContentFormatAgent & Distribution",
+        stage: "Stage 7 of 7",
+        desc: "Injects 3-4 rich internal links (/solutions/enterprise-rag, /compliance/data-privacy) and an architectural image with keyword alt text. Compiles 6 multi-format derivative assets for multi-channel distribution.",
+        checkpoints: [
+          "Rich internal links graph embedded (/solutions, /compliance)",
+          "Plain Human Markdown (No # Hashes) generated",
+          "CMS Markdown with H2s for WordPress/Yoast generated",
+          "Executive C-Suite Briefing compiled",
+          "LinkedIn Thought Leadership post formatted",
+          "Key Takeaways FAQ JSON assembled"
+        ],
+        code: "backend/app/agents/format_agent.py\nbackend/app/api/v1/campaigns.py"
+      }
+    };
+
+    function inspectStep(stepNum) {
+      document.querySelectorAll('.node-card').forEach(c => c.classList.remove('active-stage'));
+      const card = document.getElementById('step-' + stepNum);
+      if (card) card.classList.add('active-stage');
+
+      const data = stepDetails[stepNum];
+      if (!data) return;
+
+      document.getElementById('inspectorTitle').innerText = data.title;
+      document.getElementById('inspectorStage').innerText = data.stage;
+
+      let checksHtml = data.checkpoints.map(c => 
+        `<div class="flex items-center gap-2 p-2 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-300">
+           <span>✓</span> <span>${c}</span>
+         </div>`
+      ).join('');
+
+      document.getElementById('inspectorContent').innerHTML = `
+        <div>
+          <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1">What Exactly Happens Here:</h5>
+          <p class="text-slate-300 leading-relaxed bg-slate-900/80 p-3 rounded-lg border border-slate-700/80">
+            ${data.desc}
+          </p>
+        </div>
+
+        <div>
+          <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1.5">Checkpoints Verified (✓):</h5>
+          <div class="space-y-1.5">
+            ${checksHtml}
+          </div>
+        </div>
+
+        <div>
+          <h5 class="font-bold text-slate-400 uppercase text-[10px] mb-1">Live Endpoint / Code Reference:</h5>
+          <pre class="p-2.5 rounded bg-slate-950 text-sky-400 font-mono text-[11px] overflow-x-auto border border-slate-800">${data.code}</pre>
+        </div>
+      `;
+    }
+
+    let simInterval = null;
+    let currentSimStep = 1;
+
+    function toggleSimulation() {
+      if (simInterval) {
+        clearInterval(simInterval);
+        simInterval = null;
+        document.getElementById('playText').innerText = "Simulate Flow";
+        document.getElementById('playIcon').innerText = "▶";
+        document.getElementById('simStatus').innerText = "Simulation Paused";
+      } else {
+        document.getElementById('playText').innerText = "Pause Flow";
+        document.getElementById('playIcon').innerText = "⏸";
+        simInterval = setInterval(() => {
+          inspectStep(currentSimStep);
+          document.getElementById('simStatus').innerText = `Simulating Stage ${currentSimStep} of 7...`;
+          currentSimStep = (currentSimStep % 7) + 1;
+        }, 2200);
+      }
+    }
+
+    function resetSimulation() {
+      if (simInterval) {
+        clearInterval(simInterval);
+        simInterval = null;
+      }
+      currentSimStep = 1;
+      document.getElementById('playText').innerText = "Simulate Flow";
+      document.getElementById('playIcon').innerText = "▶";
+      document.getElementById('simStatus').innerText = "Idle • Click any step to inspect";
+      inspectStep(1);
+    }
+
+    function filterCategory(cat) {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        if (b.getAttribute('data-cat') === cat) {
+          b.className = 'filter-btn px-3.5 py-1.5 rounded-lg font-bold bg-sky-600 text-white transition cursor-pointer';
+        } else {
+          b.className = 'filter-btn px-3.5 py-1.5 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer';
+        }
+      });
+
+      document.querySelectorAll('.node-card').forEach(card => {
+        const categories = card.getAttribute('data-category').split(' ');
+        if (cat === 'all' || categories.includes(cat)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function updateSimMetrics(cvVal) {
+      const cv = (cvVal / 100).toFixed(2);
+      document.getElementById('valCV').innerText = `${cv} ${cv > 0.60 ? '(High Human)' : '(Robotic AI)'}`;
+      
+      let zeroGPT = Math.max(12, Math.min(94, Math.round(95 - (cvVal * 0.95))));
+      let flesch = Math.max(45, Math.min(82, Math.round(48 + (cvVal * 0.28))));
+
+      document.getElementById('simZeroGPT').innerText = `${zeroGPT}% AI`;
+      document.getElementById('simZeroGPT').className = `text-sm font-black ${zeroGPT < 35 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      document.getElementById('simFlesch').innerText = `${flesch}`;
+      document.getElementById('simFlesch').className = `text-sm font-black ${flesch >= 60 ? 'text-emerald-400' : 'text-amber-400'}`;
+    }
+
+    // Default to Step 1 on load
+    inspectStep(1);
+  </script>
+</body>
+</html>

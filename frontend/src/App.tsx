@@ -308,7 +308,17 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <a
+            href="/architecture_flowchart.html"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-300 transition cursor-pointer"
+            title="Open Interactive Architecture Flowchart in new tab"
+          >
+            <GitBranch className="w-3.5 h-3.5 text-sky-600" />
+            <span>Architecture Flowchart ↗</span>
+          </a>
           <button
             onClick={() => setShowKeyModal(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition cursor-pointer"

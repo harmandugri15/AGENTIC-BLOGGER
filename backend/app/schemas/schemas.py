@@ -3,11 +3,11 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 class CampaignCreate(BaseModel):
-    name: str = Field(..., example="AI in Healthcare Enterprise Leadership Blog")
-    target_query: str = Field(..., example="Create a blog on the best use cases of AI in healthcare")
-    target_audience: Optional[str] = "Healthcare CIOs, Clinical Informaticists, Healthtech Leaders"
-    region: Optional[str] = "US"
-    brand_tone: Optional[str] = "Authoritative, Nuanced, Clinically Rigorous, Forward-Looking"
+    name: str = Field(..., example="Generative Engine Optimization (GEO) & AI Search Visibility Guide")
+    target_query: str = Field(..., example="Create a humanized pillar blog comparing Multi-Head Attention mechanisms in AI Search vs traditional SEO for IcyQuill")
+    target_audience: Optional[str] = "VP of Marketing, Chief Marketing Officers (CMOs), Growth Engineers, SEO Directors"
+    region: Optional[str] = "Global"
+    brand_tone: Optional[str] = "Candid, Battle-Tested Practitioner, Anti-Robotic, Insightful"
     custom_competitor_urls: Optional[List[str]] = []
 
 class SourceResponse(BaseModel):

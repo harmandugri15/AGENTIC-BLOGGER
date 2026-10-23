@@ -37,17 +37,17 @@ class ResearchAgent:
         for s in api_res.get("sources", []):
             raw_sources.append(s)
 
-        # 2. Live Ethical Web Search via DuckDuckGo
-        competitor_links = await self.search_service.search_duckduckgo(f"{query} enterprise architecture best practices", max_results=3)
+        # 2. Live Ethical Web Search via DuckDuckGo (Top Google/DuckDuckGo Competitor Research)
+        competitor_links = await self.search_service.search_duckduckgo(f"{query} rival companies competitors comparison GEO AEO", max_results=4)
         for link in competitor_links:
             if not any(r["url"] == link["url"] for r in raw_sources):
                 raw_sources.append({
                     "url": link["url"],
                     "title": link["title"],
-                    "publisher": "Industry Web Source",
+                    "publisher": "Competitor / Industry Source",
                     "source_type": "COMPETITOR",
-                    "publication_date": "2024",
-                    "clean_text": f"{link['title']}. {link['snippet']} Technical insights on enterprise architectures, production deployment patterns, and operational adoption challenges."
+                    "publication_date": "2025",
+                    "clean_text": f"{link['title']}. {link['snippet']} Industry insights on Generative Engine Optimization, LLM search citations, multi-agent AI writing architectures, and competitor positioning."
                 })
 
         # 3. Custom User-Provided URLs (if any)

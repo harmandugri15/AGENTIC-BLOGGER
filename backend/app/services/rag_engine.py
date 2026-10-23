@@ -177,17 +177,17 @@ class RAGEngine:
             sentences = re.split(r"(?<=[.!?])\s+", content)
             quote = sentences[0] if sentences else content[:150]
             for s in sentences:
-                if any(w in s.lower() for w in ["ai", "clinical", "fhir", "fda", "interoperability", "model", "patient", "workflow"]):
+                if any(w in s.lower() for w in ["ai", "geo", "aeo", "icypluto", "icyquill", "attention", "transformer", "search", "citation", "llm", "google"]):
                     quote = s.strip()
                     break
 
             meta = chunk.get("metadata", {})
             evidence_pack.append({
                 "evidence_tag": tag,
-                "claim_supported": f"Contextual evidence regarding {chunk.get('heading_path', 'Clinical AI')}",
+                "claim_supported": f"Contextual evidence regarding {chunk.get('heading_path', 'AI Search & GEO Intelligence')}",
                 "verbatim_quote": quote,
-                "source_title": meta.get("title", "Clinical Research Document"),
-                "source_url": meta.get("url", "https://citiustech.com"),
+                "source_title": meta.get("title", "IcyPluto Industry Intelligence"),
+                "source_url": meta.get("url", "https://icypluto.com"),
                 "source_tier": meta.get("source_type", "PEER_REVIEWED"),
                 "confidence_score": round(chunk.get("rrf_score", 0.95) * 100, 2)
             })

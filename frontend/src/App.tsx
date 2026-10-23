@@ -82,8 +82,8 @@ export default function App() {
     },
     "ComplianceAgent": {
       role: "Healthcare Regulatory & Brand Auditor",
-      taskDescription: "Audited draft for clinical liability, verified mandatory mention of Clinician-in-the-Loop (CITL) protocols, checked HIPAA Safe Harbor / PHI de-identification context, and verified CitiusTech brand positioning.",
-      checks: ["Clinical Liability & Diagnostic Guarantee Check", "Clinician-in-the-Loop Verification", "HIPAA/PHI Protection Context", "CitiusTech Positioning Audit"]
+      taskDescription: "Audited draft for realistic ranking claims, verified IcyPluto and IcyQuill GEO differentiation, checked multi-head attention citation mechanics, and guaranteed brand positioning.",
+      checks: ["AI Search & GEO Positioning Audit", "Multi-Head Attention Synthesis Context", "Unrealistic Ranking Claim Check", "IcyQuill Differentiation Verification"]
     },
     "QualityGateSupervisor": {
       role: "Supervisor Orchestrator & Revision Controller",
@@ -300,7 +300,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           <div className="bg-sky-600 text-white p-2 rounded-lg font-bold flex items-center gap-2">
             <Cpu className="w-5 h-5" />
-            <span>CitiusTech</span>
+            <span>IcyPluto / IcyQuill</span>
           </div>
           <div>
             <h1 className="text-lg font-bold text-slate-800 leading-tight">AI Content Intelligence & SEO Agent Platform</h1>
@@ -1556,7 +1556,7 @@ export default function App() {
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50">
                   <h4 className="text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide">Google SERP Snippet Preview</h4>
                   <div className="bg-white p-4 rounded-lg border border-slate-200 max-w-2xl font-sans">
-                    <div className="text-xs text-slate-700 truncate">https://citiustech.com/insights/{latestDraft.slug}</div>
+                    <div className="text-xs text-slate-700 truncate">https://icypluto.com/insights/{latestDraft.slug}</div>
                     <div className="text-base text-blue-700 hover:underline font-medium cursor-pointer mt-0.5">
                       {latestDraft.meta_title || latestDraft.title}
                     </div>

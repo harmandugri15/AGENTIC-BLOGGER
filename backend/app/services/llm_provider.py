@@ -186,49 +186,52 @@ Respond strictly in valid JSON without markdown wrapping or commentary:
         
         prompt = f"""
 You are a candid, battle-tested enterprise engineering director and veteran practitioner writing for fellow professionals.
-Your top priority: The text MUST score under 15% on Grammarly AI Detector and ZeroGPT by reading 100% authentically human.
+Your top priority: The text MUST score under 10% on Grammarly AI Detector and ZeroGPT by rigorously adopting the writing dynamics outlined in Grammarly's own published guidelines (grammarly.com/blog/ai/how-to-avoid-ai-detection).
 
-CORE GRAMMARLY & ZEROGPT ANTI-DETECTION BLUEPRINT:
-1. NEVER USE FORMULAIC TRANSITION STARTERS (GRAMMARLY'S #1 AI TRIGGER):
-   - ABSOLUTELY DO NOT start sentences with: "In addition,", "Consequently,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,".
-   - INSTEAD, use natural conversational transitions: Start sentences with "And", "But", "So", "Still", "Yet", "Instead", "Which means".
-   - Or embed transitions inside the sentence: "Our team, however, took a different approach." "That works, of course, until traffic spikes."
+GRAMMARLY OFFICIAL ANTI-DETECTION BLUEPRINT (BASED ON GRAMMARLY'S CORE DETECTION SIGNALS):
+1. EMBRACE A RAW, AUTHENTIC HUMAN VOICE (GRAMMARLY RULE #3 & #5):
+   - Never write like a detached, polished corporate observer. Write as a practitioner who personally made mistakes, fixed outages, or argued in design reviews.
+   - Use vivid, gritty, subjective human language: "a complete mess", "we were dead wrong", "that blew up in staging", "nobody on our team wanted to touch that codebase", "a nightmare to debug".
+   - Include 2-3 specific, granular micro-anecdotes or operational observations: ("I remember spending four hours in a Friday post-mortem...", "Our lead architect almost pulled his hair out over this...").
 
-2. BREAK SYNTACTIC SYMMETRY (DESTROY MONOTONOUS AI RHYTHM):
-   - Drop in 2-4 word blunt punches: "We were wrong.", "Big mistake.", "Not even close.", "It fails right there.", "That hurts.", "Here is the catch."
-   - Include 2-3 candid parenthetical asides: "(and yes, we learned that the hard way)", "(which our VP hated)", "(usually around 2 AM on a Friday)".
-   - Use em-dashes for natural human pauses: "The real bottleneck — not the shiny vendor slide deck — is messy source data."
-   - Ask 2-3 rhetorical questions and answer them immediately: "Why does this happen? Because legacy portals are built like mazes." "Sound familiar?"
+2. EXTREME BURSTINESS & SYNTACTIC CHAOS (GRAMMARLY RULE #4):
+   - AI models write with balanced, predictable, symmetrical sentence lengths (18-24 words per sentence). Grammarly flags this rhythmic cadence immediately.
+   - DESTROY THE CADENCE with extreme variation:
+     * Intersperse ultra-short 2-4 word blunt punches: "Big mistake.", "Not even close.", "We failed.", "It hurt.", "Here is why.", "Sound familiar?"
+     * Follow a blunt punch with a long, rambling, multi-clause human thought: "When you look at how legacy monolithic pipelines ingest unvalidated PDFs from third-party vendor portals, it becomes painfully obvious why traditional OCR models choke before the document even reaches the vector database."
+     * Inject 2-3 casual parenthetical whispers: "(and trust me, the vendor never mentions this in the demo)", "(which our VP of Engineering hated)", "(usually right before a holiday weekend)".
+     * Use 2 em-dashes for spontaneous human pauses: "The real bottleneck — not the flashy multi-million-dollar AI model — is basic data hygiene."
 
-3. CONCRETE, GROUNDED REAL-WORLD FRICTION:
-   - Talk about messy reality: corrupted PDFs, angry employees, broken search queries, late-night Slack messages, compliance reviews.
-   - Speak in first-person plural and singular ("In our production rollout...", "I watched our team spend four days debugging...", "We learned the hard way...").
+3. ZERO FORMULAIC TRANSITION STARTERS (GRAMMARLY'S BIGGEST STATISTICAL TRIGGER):
+   - ABSOLUTELY BANNED as sentence starters: "In addition,", "Consequently,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,", "In light of this,", "With that being said,".
+   - INSTEAD, use authentic human connectives: Start sentences with "And", "But", "So", "Still", "Yet", "Instead", "Which means".
+   - Or tuck transitions into the middle of the sentence: "That approach, however, falls apart under heavy load." "We discovered, of course, that the database locked up."
 
-4. NATURAL HUMAN CONTRACTIONS:
-   - Use "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't" throughout.
+4. NATURAL HUMAN CONTRACTIONS (GRAMMARLY RULE #5):
+   - Real humans almost always use contractions when writing articles. Use "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't", "couldn't" constantly.
 
-5. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS:
-   - Never use '#' anywhere. Format titles and major sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
+5. STRICTLY BANNED AI VOCABULARY & PLATITUDES:
+   - Zero occurrences of: "delve into", "tapestry", "beacon of hope", "testament to", "paradigm shift", "harnessing the power", "plays a pivotal role", "rapidly evolving landscape", "in today's fast-paced world", "it is crucial to remember", "a plethora of", "a myriad of".
+
+6. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS:
+   - Format titles and sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
    Example:
-   BEST USE CASES OF AI IN HR DOCUMENTATION
+   BEST PRACTICES FOR ENTERPRISE RAG PIPELINES
    [intro text]
    ---
-   1. AMBIENT WORKFLOWS AND DATA PIPELINES
+   1. INGESTION FRICTION AND DIRTY DATA
    [section text]
 
-6. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
-   - Keep paragraphs SHORT: 30 to 80 words per paragraph. NEVER write a paragraph longer than 110 words.
-   - Insert frequent subheadings so no section exceeds 220 words.
-
-7. ZERO CORPORATE AI BUZZWORDS:
-   - Never use: "delve into", "tapestry", "beacon of hope", "testament to", "paradigm shift", "harnessing the power", "plays a pivotal role", "rapidly evolving landscape", "in today's fast-paced world".
+7. PARAGRAPH & SUBHEADING PACING:
+   - Paragraphs MUST be compact: 30 to 80 words per paragraph. Never exceed 100 words.
+   - Insert frequent subheadings so no section exceeds 200 words.
 
 8. FOCUS KEYWORD IN CRITICAL REAL ESTATE:
-   - Include the focus keyword naturally in the title, the very first paragraph (first 80 words), and at least two subheadings.
+   - Place focus keyword in the title, first 80 words, and at least two subheadings.
 
 9. EVIDENCE CITATIONS:
-   - Cite factual claims with explicit tags from this list: {tag_list[:3]}.
-10. Minimum 800 words, including an ASCII architecture diagram and practical bullet points.
+   - Support factual claims with tags from this list: {tag_list[:3]}.
+10. Minimum 800 words, with an ASCII architecture diagram and practical, non-generic takeaways.
 
 EVIDENCE PACK AVAILABLE FOR CITATION:
 {evidence_prompt}
@@ -275,34 +278,35 @@ EXACT SENTENCES FLAGGED AS AI BY ZEROGPT (REWRITE THESE AGGRESSIVELY INTO SHORT,
 """
 
         prompt = f"""
-You are an expert human editor and veteran engineering director.
-AI detection scanners (Grammarly AI Detector and ZeroGPT) flagged this draft as AI-generated.
-Your mission: Rewrite this text so it scores UNDER 15% on Grammarly AI Detector and ZeroGPT.
+You are an expert human senior editor and battle-tested engineering practitioner.
+AI detection scanners (specifically Grammarly's AI Detector and ZeroGPT) flagged this draft.
+Your mission: Rewrite this text so it scores UNDER 10% on Grammarly AI Detector and ZeroGPT by rigorously enforcing Grammarly's official human writing principles (grammarly.com/blog/ai/how-to-avoid-ai-detection).
 
-TACTICS TO DEFEAT GRAMMARLY & ZEROGPT:
-1. ELIMINATE FORMULAIC TRANSITION STARTERS (GRAMMARLY'S #1 AI TRIGGER):
-   - Replace any sentence beginning with "Consequently,", "In addition,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,".
-   - Start with natural human words: "And", "But", "So", "Still", "Yet", "Instead", "Which means".
-   - Or place transitions inside the sentence: "Our team, however, took a different approach."
+GRAMMARLY OFFICIAL ANTI-DETECTION MANDATES:
+1. RAW, AUTHENTIC HUMAN VOICE & PERSONAL INSIGHT (GRAMMARLY PRINCIPLES):
+   - Replace any detached corporate tone with authentic first-person practitioner grit ("In our tests...", "We learned this the hard way...", "I saw our engineers struggle with...").
+   - Ground the advice in tangible friction: system crashes, broken dependencies, unformatted spreadsheets, messy edge cases.
 
-2. BREAK SENTENCE SYMMETRY & INJECT ASYMMETRY:
-   - Drop in 2-4 word blunt punches: "It works.", "Not quite.", "Big mistake.", "Here is why.", "Nobody warned us."
-   - Insert 2 candid parenthetical asides: "(and yes, we learned that the hard way)", "(which our VP hated)".
-   - Use em-dashes for human pacing: "The real bottleneck — not the shiny vendor slide deck — is messy source data."
-   - Ask 1-2 rhetorical questions and answer them immediately: "Why does this happen? Because legacy portals are built like mazes."
+2. ASYMMETRICAL SENTENCE PACING (ELIMINATE AI MONOTONY):
+   - Insert 2-4 word blunt punches: "Big mistake.", "Not even close.", "We failed.", "It hurt.", "Here is why."
+   - Follow with sprawling, natural human sentences.
+   - Inject 2-3 casual parenthetical asides: "(and yes, the vendor omitted this from the pitch)", "(which cost us three weekends)".
+   - Insert em-dashes for conversational emphasis: "The real issue — not the compute budget — is uncleaned training data."
 
-3. FIRST-PERSON PRACTITIONER CONTEXT:
-   - Say 'In our deployments...', 'We spent weeks troubleshooting...', 'Engineers often realize...', 'If you look at our logs...'
+3. PURGE ALL FORMULAIC TRANSITION STARTERS (GRAMMARLY'S #1 AI STATISTICAL TRIGGER):
+   - Remove every single sentence starter like: "In addition,", "Consequently,", "Furthermore,", "Moreover,", "Specifically,", "Because of this,", "On the other hand,", "Meanwhile,", "As a result,", "In light of this,".
+   - Connect thoughts naturally: Start with "And", "But", "So", "Still", "Yet", "Instead", "Which means".
+   - Or embed the transition mid-clause: "Our team, however, chose a different path."
 
-4. NATURAL HUMAN CONTRACTIONS:
-   - Use 'don't', 'can't', 'it's', 'doesn't', 'we've', 'they're', 'there's' everywhere.
+4. FREQUENT NATURAL CONTRACTIONS:
+   - Use "don't", "can't", "it's", "doesn't", "we've", "they're", "there's", "won't", "shouldn't".
 
-5. ZERO ROBOTIC CORPORATE FILLER:
-   - Never use 'delve into', 'tapestry', 'beacon', 'testament', 'paradigm shift', 'pivotal', 'moreover', 'furthermore', 'in conclusion', 'rapidly evolving'.
+5. BAN CORPORATE AI CLICHÉS:
+   - Banned: "delve into", "tapestry", "beacon", "testament", "paradigm shift", "pivotal role", "in conclusion", "rapidly evolving", "a plethora of".
 
-6. PRESERVE ESSENTIAL CONTENT:
-   - Strictly keep all [EVID-xxx] citation tags, numbers, statistics, and code blocks.
-   - Strictly ZERO '#' or '##' markdown characters. Keep headers as plain uppercase lines.
+6. PRESERVE STRUCTURAL INTEGRITY:
+   - Strictly keep all [EVID-xxx] citations, statistics, numbers, and diagrams intact.
+   - Strictly ZERO '#' or '##' markdown characters. Keep headers as clean uppercase lines separated by '---'.
 {flagged_context}
 
 TEXT TO REWRITE:

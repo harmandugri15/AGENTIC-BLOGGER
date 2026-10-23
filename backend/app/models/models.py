@@ -1,11 +1,14 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Text, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.app.models.base import Base
 
 def generate_uuid() -> str:
     return str(uuid.uuid4())
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 class Campaign(Base):
     __tablename__ = "campaigns"
@@ -18,8 +21,8 @@ class Campaign(Base):
     brand_tone: Mapped[str] = mapped_column(String(100), default="Authoritative, Clinical, Innovative")
     status: Mapped[str] = mapped_column(String(50), default="INITIATED")
     current_step: Mapped[str] = mapped_column(String(100), default="Pending Research")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
     
     sources: Mapped[list["Source"]] = relationship("Source", back_populates="campaign", cascade="all, delete-orphan")
     drafts: Mapped[list["Draft"]] = relationship("Draft", back_populates="campaign", cascade="all, delete-orphan")

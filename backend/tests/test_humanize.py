@@ -1,19 +1,14 @@
-import urllib.request
-import json
+import pytest
+from backend.app.services.humanizer import HumanizerEngine
 
-cids = json.loads(urllib.request.urlopen("http://127.0.0.1:8000/api/v1/campaigns").read().decode())
-cid = cids[0]["id"]
-print("Testing humanization loop on campaign:", cid)
-
-req = urllib.request.Request(
-    f"http://127.0.0.1:8000/api/v1/campaigns/{cid}/humanize",
-    data=b"{}",
-    headers={"Content-Type": "application/json"}
-)
-res = json.loads(urllib.request.urlopen(req).read().decode())
-print(f"Initial AI Detection Score: {res['initial_ai_score']}%")
-print(f"Final AI Detection Score:   {res['final_ai_score']}%")
-print(f"Final Human Score:          {res['final_human_score']}%")
-print(f"Total Loops:                {res['iterations_count']}")
-for step in res["loop_history"]:
-    print(f"  Loop {step['iteration']}: AI Prob = {step['ai_probability']}%, CV = {step['burstiness_cv']} | {step['action']}")
+def test_humanizer_engine_loop():
+    engine = HumanizerEngine()
+    test_text = """# Best Use Cases of AI in Enterprise
+Furthermore, in today's fast-paced world, artificial intelligence is a game-changer.
+Moreover, it is crucial to delve into the paradigm shift. The comprehensive analysis demonstrates value."""
+    
+    result = engine.run_humanization_loop(test_text, target_ai_threshold=25.0, max_iterations=3)
+    assert result["final_ai_score"] <= result["initial_ai_score"]
+    assert "#" not in result["final_text"]
+    assert "Furthermore" not in result["final_text"]
+    assert result["final_human_score"] >= 70.0

@@ -16,13 +16,13 @@ class HumanStyleEditorialAgent:
         self.humanizer = HumanizerEngine()
 
     def execute(self, draft_markdown: str) -> Dict[str, Any]:
-        logger.info("Executing Human-Style Editorial & Anti-Robotic Audit with Humanization Loop...")
+        logger.info("Executing Human-Style Editorial & Anti-Robotic Audit with Humanization Loop (Target: < 35% AI)...")
         
-        # Run iterative anti-AI looping technique
+        # Run iterative anti-AI looping technique with target < 35% AI
         loop_result = self.humanizer.run_humanization_loop(
             draft_markdown,
-            target_ai_threshold=22.0,
-            max_iterations=3
+            target_ai_threshold=35.0,
+            max_iterations=4
         )
 
         final_text = loop_result["final_text"]
@@ -31,10 +31,10 @@ class HumanStyleEditorialAgent:
         blocking_issues = []
         suggestions = []
 
-        if eval_metrics["ai_probability"] > 40.0:
-            blocking_issues.append(f"AI Detection risk is {eval_metrics['ai_probability']}%. Requires additional humanization pass.")
+        if eval_metrics["ai_probability"] >= 35.0:
+            blocking_issues.append(f"ZeroGPT AI Detection risk is {eval_metrics['ai_probability']}%. Target is < 35%. Requires automated de-robotic rewrite cycle.")
         else:
-            suggestions.append(f"Human-likeness successfully achieved: Estimated {eval_metrics['human_probability']}% Human ({eval_metrics['ai_probability']}% AI risk).")
+            suggestions.append(f"ZeroGPT Threshold Met: {eval_metrics['ai_probability']}% AI ({eval_metrics['human_probability']}% Human). Safe from AI detectors.")
 
         suggestions.append(f"Sentence burstiness score: {eval_metrics['burstiness_cv']} CV. Pacing reflects organic human editorial structure.")
 
@@ -46,11 +46,13 @@ class HumanStyleEditorialAgent:
             "grade": grade,
             "ai_probability": eval_metrics["ai_probability"],
             "human_probability": eval_metrics["human_probability"],
-            "summary": f"Human-Style Editorial Score: {score}/100. AI detection probability reduced to {eval_metrics['ai_probability']}% across {loop_result['iterations_count']} humanization loops.",
+            "is_safe_under_35": eval_metrics["ai_probability"] < 35.0,
+            "summary": f"ZeroGPT Human-Likeness Score: {score}/100. AI detection probability reduced to {eval_metrics['ai_probability']}% across {loop_result['iterations_count']} humanization loops.",
             "sentence_burstiness_cv": eval_metrics["burstiness_cv"],
             "sentence_burstiness_std": eval_metrics["sentence_std_dev"],
             "humanized_text": final_text,
             "loop_history": loop_result["loop_history"],
+            "detector_source": eval_metrics.get("detector_source", "ZeroGPT Calibrator"),
             "blocking_issues": blocking_issues,
             "suggestions": suggestions
         }

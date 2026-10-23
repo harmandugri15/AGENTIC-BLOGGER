@@ -18,7 +18,7 @@ class EthicalCrawler:
     async def fetch_and_parse(self, url: str) -> Optional[Dict[str, Any]]:
         domain = urlparse(url).netloc
         try:
-            async with httpx.AsyncClient(timeout=settings.REQUEST_TIMEOUT, follow_redirects=True) as client:
+            async with httpx.AsyncClient(timeout=3.0, follow_redirects=True) as client:
                 response = await client.get(url, headers=self.headers)
                 if response.status_code != 200:
                     logger.warning(f"Failed to fetch {url} (status {response.status_code})")

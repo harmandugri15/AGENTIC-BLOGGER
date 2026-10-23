@@ -1,0 +1,17 @@
+{
+  "name": "enterprise-agentic-content-platform",
+  "version": "2.0.0",
+  "description": "Enterprise Multi-Agent Content Intelligence & SEO Automation Platform",
+  "scripts": {
+    "start": "python run.py dev",
+    "dev": "python run.py dev",
+    "backend": "python run.py backend",
+    "frontend": "python run.py frontend",
+    "test": "python run.py test",
+    "build": "python run.py build",
+    "status": "python run.py status"
+  },
+  "keywords": ["multi-agent", "rag", "seo", "llm", "gemini", "fastapi", "react"],
+  "author": "CitiusTech",
+  "license": "UNLICENSED"
+}

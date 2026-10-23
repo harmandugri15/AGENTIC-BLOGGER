@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 class CampaignCreate(BaseModel):
@@ -21,8 +21,7 @@ class SourceResponse(BaseModel):
     publication_date: Optional[str]
     summary: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EvidenceItemResponse(BaseModel):
     id: str
@@ -34,8 +33,7 @@ class EvidenceItemResponse(BaseModel):
     source_tier: str
     confidence_score: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CompetitorMatrixItem(BaseModel):
     competitor: str
@@ -82,17 +80,18 @@ class DraftResponse(BaseModel):
     campaign_id: str
     revision_number: int
     title: str
-    slug: Optional[str]
-    meta_title: Optional[str]
-    meta_description: Optional[str]
+    slug: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    focus_keyword: Optional[str] = None
     word_count: int
     reading_level: str
     status: str
     created_at: datetime
     content_markdown: str
+    yoast_assessment: Optional[Dict[str, Any]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AgentLogResponse(BaseModel):
     agent_name: str
@@ -101,8 +100,7 @@ class AgentLogResponse(BaseModel):
     latency_ms: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CampaignDetailResponse(BaseModel):
     id: str
@@ -122,9 +120,15 @@ class CampaignDetailResponse(BaseModel):
 
 class MultiFormatExportResponse(BaseModel):
     title: str
+    focus_keyword: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    slug: Optional[str] = None
     blog_markdown: str
+    cms_markdown: Optional[str] = None
     blog_html: str
     executive_summary: str
     linkedin_thought_leadership: str
     email_newsletter_teaser: str
     key_takeaways_faq: List[Dict[str, str]]
+    yoast_assessment: Optional[Dict[str, Any]] = None

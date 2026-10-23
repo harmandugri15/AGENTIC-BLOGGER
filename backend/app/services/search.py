@@ -17,7 +17,7 @@ class SearchService:
         results = []
         try:
             url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
-            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            async with httpx.AsyncClient(timeout=2.0, follow_redirects=True) as client:
                 res = await client.post(url, data={"q": query}, headers=self.headers)
                 if res.status_code == 200:
                     soup = BeautifulSoup(res.text, "html.parser")
@@ -26,7 +26,7 @@ class SearchService:
                         parent = a.find_parent("div", class_="result__body")
                         if parent:
                             title_elem = parent.find("a", class_="result__url") or parent.find("h2")
-                            title = title_elem.get_text(strip=True) if title_elem else "Healthcare Analysis"
+                            title = title_elem.get_text(strip=True) if title_elem else "Industry Analysis"
                             href = a.get("href", "")
                             snippet = a.get_text(strip=True)
                             
@@ -47,19 +47,14 @@ class SearchService:
         except Exception as e:
             logger.warning(f"DuckDuckGo search encountered an issue: {e}")
 
-        # If zero results due to network/rate-limiting, supply verified competitor benchmark pages
-        if not results:
-            results = self._get_fallback_competitor_results(query)
-            
         return results
 
     async def search_pubmed(self, query: str, max_results: int = 3) -> List[Dict[str, str]]:
         """Retrieves real peer-reviewed scientific studies from NCBI PubMed E-Utilities."""
         results = []
         try:
-            # Step 1: ESearch to get PubMed IDs (PMIDs)
             search_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={quote_plus(query)}&retmode=json&retmax={max_results}"
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=2.0) as client:
                 res = await client.get(search_url)
                 if res.status_code == 200:
                     data = res.json()
@@ -87,48 +82,4 @@ class SearchService:
         except Exception as e:
             logger.warning(f"PubMed API search error: {e}")
 
-        if not results:
-            results = self._get_fallback_pubmed_results(query)
-            
         return results
-
-    def _get_fallback_competitor_results(self, query: str) -> List[Dict[str, str]]:
-        """Verified authoritative competitor benchmarks in healthcare technology."""
-        return [
-            {
-                "url": "https://www.innovaccer.com/resources/blog/ai-in-healthcare-use-cases",
-                "title": "Top AI Use Cases Transforming Healthcare Operations - Innovaccer",
-                "snippet": "Analysis of predictive population health, automated clinical risk scoring, and care management workflows powered by machine learning.",
-                "source_type": "COMPETITOR"
-            },
-            {
-                "url": "https://www.tcs.com/insights/blogs/generative-ai-healthcare-payer-provider",
-                "title": "Unlocking Generative AI for Payers and Providers - TCS",
-                "snippet": "Examining operational efficiencies in claims processing, prior authorization turnaround times, and clinician administrative burden.",
-                "source_type": "COMPETITOR"
-            },
-            {
-                "url": "https://www.kore.ai/industries/healthcare/ai-solutions",
-                "title": "Conversational AI and Ambient Voice in Healthcare - Kore.ai",
-                "snippet": "How ambient voice assistants and conversational clinical agents reduce physician documentation hours and improve patient scheduling.",
-                "source_type": "COMPETITOR"
-            }
-        ]
-
-    def _get_fallback_pubmed_results(self, query: str) -> List[Dict[str, str]]:
-        return [
-            {
-                "url": "https://pubmed.ncbi.nlm.nih.gov/38291044/",
-                "title": "Evaluating the Clinical Safety and Efficacy of Large Language Models in Healthcare Delivery",
-                "snippet": "Published in Nature Medicine (2024). Evaluates clinical accuracy, diagnostic nuance, and hallucination rates in hospital clinical workflows.",
-                "source_type": "PUBMED",
-                "publication_date": "2024-02"
-            },
-            {
-                "url": "https://pubmed.ncbi.nlm.nih.gov/37841103/",
-                "title": "Algorithmic Transparency and Bias Mitigation in Clinical AI Systems",
-                "snippet": "Published in The Lancet Digital Health (2023). Multi-center cohort study evaluating bias prevention in clinical risk stratification models.",
-                "source_type": "PUBMED",
-                "publication_date": "2023-11"
-            }
-        ]

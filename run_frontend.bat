@@ -1,4 +1,3 @@
 @echo off
-echo Starting CitiusTech Frontend Dashboard...
-cd frontend
-npm run dev -- --host --port 5173
+REM Redirects to the modern cross-platform Python CLI runner
+python run.py frontend

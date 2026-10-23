@@ -1,4 +1,3 @@
 @echo off
-echo Starting CitiusTech AI Content Intelligence Backend...
-set PYTHONPATH=.
-python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+REM Redirects to the modern cross-platform Python CLI runner
+python run.py backend

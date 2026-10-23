@@ -1,224 +1,292 @@
-import json
 import re
+import json
+import os
+import asyncio
 from typing import Dict, Any, List, Optional
 from backend.app.config import settings
 from backend.app.core.logger import get_logger
+from backend.app.services.humanizer import HumanizerEngine
 
 logger = get_logger("LLMProvider")
 
 class LLMProvider:
     """
-    Enterprise-grade provider abstraction supporting hosted APIs (OpenAI, Gemini)
-    and a built-in Expert Clinical & Editorial Engine ensuring human-like,
-    citation-grounded outputs without mandatory paid subscriptions.
+    Enterprise LLM Provider that interfaces directly with Google Gemini models.
+    Strictly adheres to user directive:
+    - Never substitutes canned or hardcoded paragraphs.
+    - If live AI models fail or quota is exhausted, raises explicit errors so the frontend can notify the user.
     """
 
+    CANDIDATE_MODELS = [
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3-flash-preview"
+    ]
+    CANDIDATE_GEMINI_MODELS = CANDIDATE_MODELS
+    CANDIDATE_GROQ_MODELS = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant"
+    ]
+
     def __init__(self):
-        self.provider = settings.LLM_PROVIDER
-        self.openai_key = settings.OPENAI_API_KEY
-        self.gemini_key = settings.GEMINI_API_KEY
+        self.gemini_key = settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
+        self.groq_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY", "")
+        self.humanizer = HumanizerEngine()
+        self.genai = None
+
+        if self.gemini_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=self.gemini_key)
+                self.genai = genai
+                logger.info("Configured Google Gemini API client.")
+            except Exception as e:
+                logger.error(f"Failed to configure Gemini client: {e}")
+                self.genai = None
+        else:
+            self.genai = None
+
+    def _call_groq_fallback(self, prompt: str, groq_key: str) -> str:
+        """Calls Groq Llama 3.3 / 3.1 models as live fallback."""
+        try:
+            from groq import Groq
+            client = Groq(api_key=groq_key)
+            errors = []
+            for model_name in self.CANDIDATE_GROQ_MODELS:
+                try:
+                    logger.info(f"Attempting live generation using Groq model '{model_name}'...")
+                    completion = client.chat.completions.create(
+                        messages=[{"role": "user", "content": prompt}],
+                        model=model_name,
+                        temperature=0.7,
+                        max_tokens=4096
+                    )
+                    if completion.choices and completion.choices[0].message.content:
+                        text = completion.choices[0].message.content.strip()
+                        logger.info(f"Successfully generated live content using Groq model '{model_name}'.")
+                        return text
+                except Exception as e:
+                    err_msg = str(e)
+                    logger.warning(f"Groq model '{model_name}' failed: {err_msg[:120]}")
+                    errors.append(f"{model_name}: {err_msg[:120]}")
+            raise RuntimeError(f"ALL_GROQ_MODELS_FAILED: {'; '.join(errors)}")
+        except ImportError:
+            raise RuntimeError("GROQ_LIB_MISSING: python 'groq' package is not installed.")
+
+    def _call_llm_with_fallback(self, prompt: str) -> str:
+        """
+        Executes live generation across candidate providers:
+        1. Google Gemini candidate models
+        2. Groq (Llama 3.3 70B / Llama 3.1 8B) fallback if Gemini fails or quota exceeded
+        Never uses canned or hardcoded content.
+        """
+        current_gemini_key = os.getenv("GEMINI_API_KEY") or settings.GEMINI_API_KEY or self.gemini_key
+        current_groq_key = os.getenv("GROQ_API_KEY") or settings.GROQ_API_KEY or self.groq_key
+
+        errors = []
+
+        # 1. Try Google Gemini if key available
+        if current_gemini_key:
+            if not self.genai or current_gemini_key != self.gemini_key:
+                try:
+                    import google.generativeai as genai
+                    genai.configure(api_key=current_gemini_key)
+                    self.genai = genai
+                    self.gemini_key = current_gemini_key
+                    logger.info("Updated Google Gemini client with active key.")
+                except Exception as e:
+                    logger.error(f"Failed to configure Gemini client: {e}")
+
+            if self.genai:
+                for model_name in self.CANDIDATE_GEMINI_MODELS:
+                    try:
+                        model = self.genai.GenerativeModel(model_name)
+                        response = model.generate_content(prompt)
+                        if response and response.text:
+                            logger.info(f"Successfully generated content using Gemini '{model_name}'.")
+                            return response.text.strip()
+                    except Exception as e:
+                        err_msg = str(e)
+                        logger.warning(f"Gemini model '{model_name}' failed: {err_msg[:120]}")
+                        errors.append(f"Gemini {model_name}: {err_msg[:120]}")
+
+        # 2. Try Groq Fallback if Gemini failed or key missing
+        if current_groq_key:
+            logger.info("Engaging Groq live LLM fallback...")
+            try:
+                return self._call_groq_fallback(prompt, current_groq_key)
+            except Exception as e:
+                errors.append(f"Groq Fallback: {str(e)[:120]}")
+
+        # If neither or all failed:
+        if not current_gemini_key and not current_groq_key:
+            raise RuntimeError("API_KEY_MISSING: Neither Gemini API key nor Groq API key is configured. Please provide one in the UI.")
+
+        raise RuntimeError(f"ALL_MODELS_FAILED: Live LLM calls failed across Google Gemini and Groq. Details: {'; '.join(errors)}")
+
+    def _call_gemini_with_fallback(self, prompt: str) -> str:
+        """Alias for backward compatibility."""
+        return self._call_llm_with_fallback(prompt)
 
     async def generate_seo_strategy(self, query: str, competitor_pages: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Generates SEO opportunity brief, search intent, and competitor content gap analysis."""
-        return {
-            "target_query": query,
-            "search_intent": "Commercial & Informational (Healthcare leaders evaluating AI implementation)",
-            "primary_keywords": [
-                "AI in healthcare use cases",
-                "enterprise healthcare artificial intelligence",
-                "clinical AI workflow automation"
-            ],
-            "secondary_keywords": [
-                "ambient clinical documentation",
-                "prior authorization AI",
-                "FHIR AI interoperability",
-                "FDA SaMD clinical validation",
-                "hospital predictive analytics"
-            ],
-            "semantic_entities": [
-                "HL7 FHIR",
-                "Electronic Health Records (EHR)",
-                "CMS-0057-F mandate",
-                "ONC HTI-1",
-                "Clinician-in-the-Loop (CITL)",
-                "Software as a Medical Device (SaMD)",
-                "HIPAA Safe Harbor"
-            ],
-            "target_slug": "best-ai-use-cases-healthcare-enterprise-guide",
-            "recommended_meta_title": "Best Use Cases of AI in Healthcare: An Enterprise Implementation Guide | CitiusTech",
-            "recommended_meta_description": "Beyond the hype: Discover how health systems deploy AI across ambient documentation, prior authorization, and FHIR-based clinical analytics.",
-            "recommended_h2_sections": [
-                "The Enterprise Reality: Moving Beyond Generative AI Hype in Healthcare",
-                "1. Ambient Clinical Voice & EHR Workflow Automation",
-                "2. Automated Prior Authorization & Claims Intelligence (CMS-0057-F)",
-                "3. Real-Time Clinical Decision Support & Predictive Patient Deterioration",
-                "4. Medical Imaging AI & Diagnostic Triaging",
-                "The Architectural Imperative: Data Interoperability, FHIR, and Quality Standards",
-                "CitiusTech's Perspective: Building Clinician-in-the-Loop Governance",
-                "Conclusion & Strategic Action Plan for Healthcare CIOs"
-            ],
-            "competitor_matrix": [
-                {
-                    "competitor": "General IT & Tech Consultancies (TCS, Wipro)",
-                    "url": "https://tcs.com/healthcare-ai",
-                    "strengths": ["High-level enterprise digital transformation roadmap"],
-                    "content_gaps": ["Lacks deep clinical workflow nuances and granular EHR interoperability protocols"],
-                    "citiustech_differentiation": "Deep HL7 FHIR expertise, specific EHR integration pipelines (Epic/Cerner), and clinician-in-the-loop governance."
-                },
-                {
-                    "competitor": "Point Solution Vendors (Innovaccer, Kore.ai)",
-                    "url": "https://innovaccer.com/ai-use-cases",
-                    "strengths": ["Strong payer-provider collaboration messaging"],
-                    "content_gaps": ["Biased towards single proprietary platforms rather than vendor-agnostic architecture"],
-                    "citiustech_differentiation": "Comprehensive multi-payer, multi-EHR systems integration, addressing regulatory transparency under ONC HTI-1."
-                }
-            ]
-        }
+        """Generates dynamic SEO strategy using live Gemini. Never uses canned data."""
+        comp_titles = [c.get("title", "") for c in competitor_pages[:3]]
+        prompt = f"""
+You are a principal SEO strategist. Analyze the user query: "{query}".
+Discovered competitor references: {comp_titles}.
+
+Respond strictly in valid JSON without markdown wrapping or commentary:
+{{
+  "target_query": "{query}",
+  "domain": "Specific Domain (e.g. Robotics, Education, Healthcare, Supply Chain)",
+  "search_intent": "Clear commercial and practitioner search intent description",
+  "primary_keywords": ["keyword 1", "keyword 2", "keyword 3"],
+  "secondary_keywords": ["sec 1", "sec 2", "sec 3", "sec 4"],
+  "semantic_entities": ["Entity 1", "Entity 2", "Entity 3", "Entity 4", "Entity 5", "Entity 6"],
+  "target_slug": "seo-friendly-url-slug",
+  "recommended_meta_title": "Meta title under 60 chars",
+  "recommended_meta_description": "Meta description under 155 chars",
+  "recommended_h2_sections": ["H2 1", "H2 2", "H2 3", "H2 4", "H2 5"],
+  "competitor_matrix": [
+    {{
+      "competitor": "Competitor Name",
+      "url": "https://example.com",
+      "strengths": ["strength 1"],
+      "content_gaps": ["gap 1"],
+      "citiustech_differentiation": "differentiation angle"
+    }}
+  ]
+}}
+"""
+        txt = await asyncio.to_thread(self._call_gemini_with_fallback, prompt)
+        
+        # Clean any json code block fences if present
+        cleaned = txt
+        if "```json" in cleaned:
+            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+
+        try:
+            data = json.loads(cleaned)
+        except Exception:
+            match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+            if match:
+                data = json.loads(match.group(0))
+            else:
+                raise RuntimeError(f"INVALID_JSON_RESPONSE: Gemini returned non-JSON response for SEO strategy: {txt[:200]}")
+
+        data["target_query"] = query
+        return data
 
     async def generate_draft(self, query: str, seo_brief: Dict[str, Any], evidence_pack: List[Dict[str, Any]], brand_tone: str) -> Dict[str, Any]:
-        """
-        Generates an authoritative, human-sounding healthcare blog grounded in evidence_pack.
-        Specifically engineered to avoid robotic AI clichés, ensure high burstiness, and natural rhythm.
-        """
-        # Ensure all evidence tags strictly exist in evidence_pack
-        if evidence_pack:
-            tag_list = [e["evidence_tag"] for e in evidence_pack]
-        else:
-            tag_list = ["[EVID-001]"]
-            
-        evid_1 = tag_list[0]
-        evid_2 = tag_list[1] if len(tag_list) > 1 else tag_list[0]
-        evid_3 = tag_list[2] if len(tag_list) > 2 else (tag_list[1] if len(tag_list) > 1 else tag_list[0])
+        """Generates live, authentic article using Google Gemini without '#' marks or canned text."""
+        tag_list = [e["evidence_tag"] for e in evidence_pack] if evidence_pack else ["[EVID-001]", "[EVID-002]"]
+        evidence_prompt = "\n".join([f"- {ev['evidence_tag']}: {ev['verbatim_quote']} (Source: {ev['source_title']}, {ev['source_url']})" for ev in evidence_pack[:4]])
+        
+        prompt = f"""
+You are a plain-spoken practitioner, veteran technology director, and human writer.
+Write a comprehensive, conversational, real-world enterprise guide on:
+Topic: "{query}"
+Target Keywords: {seo_brief.get('primary_keywords', [])}
+Semantic Entities: {seo_brief.get('semantic_entities', [])}
+Recommended Outline: {seo_brief.get('recommended_h2_sections', [])}
+Brand Voice: {brand_tone}
 
-        title = "Best Use Cases of AI in Healthcare: Pragmatic Architectures for Enterprise Health Systems"
-        slug = "best-ai-use-cases-healthcare-enterprise-guide"
-        meta_title = "Best Use Cases of AI in Healthcare: An Enterprise Guide | CitiusTech"
-        meta_description = "A deep dive into high-impact AI use cases in healthcare—from ambient documentation and prior authorization to clinical FHIR integration."
+CRITICAL SEO & READABILITY RULES (MANDATORY TO ACHIEVE 100% YOAST SEO & HUMAN SCORES):
+1. ABSOLUTELY ZERO '#' OR '##' HASH MARKS FOR HEADINGS. NEVER USE '#' ANYWHERE IN THE TEXT.
+   Format titles and major sections simply as clean uppercase or numbered plain lines separated by '---' dividers.
+   Example format:
+   Best Use Cases of AI in Robotics: Practical Setups for Enterprise Leaders
 
-        # Note: We deliberately avoid clichés like "In today's fast-paced world", "revolutionizing the landscape", etc.
-        markdown = f"""# {title}
+   [Intro paragraphs here]
 
-Healthcare executives have spent the past eighteen months fielding pitches about artificial intelligence. Yet, inside hospital corridors and payer operations centers, the question is rarely whether AI is capable. The real question is far more grounded: *which implementations survive clinical workflow reality and actually deliver measurable return on investment?*
+   ---
 
-Between physician burnout, stringent margins, and mounting federal interoperability mandates, health systems cannot afford science experiments. Success requires moving past generic chatbot demonstrations toward production architectures that integrate directly into Electronic Health Record (EHR) workflows while preserving clinician autonomy {evid_1}.
+   1. VISION-GUIDED MANIPULATION AND EDGE COMPUTER VISION
+   [Section paragraphs here]
 
-Here is an architectural breakdown of the highest-impact enterprise use cases of AI in healthcare, what it takes to deploy them, and how leading health organizations build the governance to make them stick.
+2. PARAGRAPH & SUBHEADING LENGTH (STRICT YOAST LIMITS):
+   - Keep paragraphs SHORT: 30 to 90 words per paragraph. NEVER write a paragraph longer than 120 words.
+   - Insert frequent subheadings so no section is longer than 250 words.
 
----
+3. TRANSITION WORDS (MINIMUM 30% OF SENTENCES):
+   - At least 30% of sentences MUST contain natural transition words (e.g., "For example,", "In addition,", "Specifically,", "Consequently,", "Because of this,", "In fact,", "On the other hand,", "Meanwhile,", "As a result,").
 
-## 1. Ambient Clinical Documentation & EHR Workflow Relief
+4. READABILITY & PLAIN ENGLISH (FLESCH READING EASE >= 60):
+   - Average sentence length should be 12 to 16 words.
+   - Use simple words instead of corporate SAT buzzwords. Say "too much work" or "paperwork headache" instead of "administrative burden". Say "things that don't work" instead of "speculative pilots". Say "letting operators/engineers do their job" instead of "preserving autonomy".
+   - Inject short, punchy sentence fragments. E.g.: "Training robots is hard. It takes up months. Delays production."
+   - Use natural contractions (don't, can't, won't, it's).
+   - NEVER use AI clichés: "In today's fast-paced world", "delve into", "tapestry", "beacon of hope", "paradigm shift", "harnessing the power of".
 
-Administrative burden remains the primary driver of clinical burnout. Physicians routinely spend nearly two hours completing EHR documentation for every hour of direct patient care. 
+5. FOCUS KEYWORD IN CRITICAL REAL ESTATE:
+   - Weave the target topic/keyword naturally into the title, the very first paragraph (first 100 words), and at least two subheadings.
 
-Ambient clinical voice technology captures natural doctor-patient dialogues, filters background acoustic noise, and drafts structured clinical progress notes conforming to SOAP (Subjective, Objective, Assessment, Plan) guidelines {evid_2}. 
+6. STRICT EVIDENCE CITATIONS:
+   You MUST cite factual claims with explicit tags from this list: {tag_list[:3]}.
+7. Include a scannable ASCII architectural workflow diagram in a codeblock and practical implementation bullet points.
+8. Minimum 800 words.
 
-Unlike early transcription tools, modern ambient systems understand medical nomenclature, dialect variations, and implicit diagnostic reasoning.
-
-### Pragmatic Implementation Considerations
-* **EHR Integration**: Integrating notes directly into Epic or Oracle Health (Cerner) via SMART on FHIR interfaces prevents dual-window fatigue.
-* **Clinician-in-the-Loop Signoff**: Generated documentation must always remain in a review state. The physician edits and signs the note with one click, preserving accountability.
-* **Measurable ROI**: Health systems deploying ambient documentation report an average reduction of 45 to 60 minutes of after-hours "pajama time" per physician per shift.
-
----
-
-## 2. Automated Prior Authorization & Claims Intelligence (CMS-0057-F)
-
-Prior authorization has historically been healthcare's most friction-heavy transaction. Manual review cycles delay patient care, consume hundreds of staff hours weekly, and drive up administrative expenses for both payers and providers.
-
-With the CMS-0057-F Interoperability and Prior Authorization Final Rule mandating automated electronic decisions and strict turnaround windows, AI-driven rules engines are no longer optional {evid_3}.
-
-Modern architectures utilize Natural Language Processing (NLP) to parse unstructured clinical charts against payer coverage policies, verifying diagnostic criteria automatically before routing edge cases to medical directors.
-
-```
-+-------------------+      +-----------------------+      +-------------------+
-| Clinical Chart    | ---> | NLP Policy Extraction | ---> | Real-Time Prior   |
-| (EHR/FHIR USCDI)  |      | & Evidence Matching   |      | Auth Approval API |
-+-------------------+      +-----------------------+      +-------------------+
-```
-
-### The CitiusTech Advantage
-By aligning payer medical policy rules with Fast Healthcare Interoperability Resources (HL7 FHIR Da Vinci PAS profiles), organizations eliminate days of manual review while ensuring full compliance with federal audits.
-
----
-
-## 3. Real-Time Clinical Decision Support & Deterioration Prediction
-
-While generative AI captures public attention, predictive machine learning models continue to save lives in acute care settings. 
-
-Sepsis, acute kidney injury (AKI), and sudden hemodynamic collapse often present subtle physiological shifts hours before vital signs trigger standard threshold alarms. Machine learning models continuously ingest telemetry feeds, lab results, and medication administration records to generate calibrated risk scores {evid_1}.
-
-### Avoiding Alert Fatigue
-The greatest failure mode in hospital AI is alarm fatigue. If nurses and intensivists receive dozens of false positives, they silence the system. Deployments must enforce:
-1. **Calibrated Thresholds**: Tuning specificity over sensitivity in non-ICU stepdown wards.
-2. **Explainable Features**: The system must display *why* an alert fired (e.g., "Trending lactic acid + widening pulse pressure"), rather than a black-box probability score.
-
----
-
-## 4. Medical Imaging Triage & Computer Vision Diagnostics
-
-In radiology and pathology, AI does not replace specialists; it triages worklists. 
-
-Emergency department CT scans for suspected ischemic stroke, intracranial hemorrhage, or pulmonary embolism can be parsed by FDA-cleared computer vision algorithms in seconds {evid_2}. Scans showing acute pathology automatically jump to the top of the radiologist's reading queue, shaving crucial minutes off door-to-needle times.
-
----
-
-## The Foundational Imperative: Clean Data & FHIR Interoperability
-
-No AI model can overcome fragmented, siloed data. If an algorithm cannot access longitudinal patient history across disparate EHRs, its predictions remain brittle.
-
-Enterprise deployment requires a robust data substrate:
-* **HL7 FHIR Standardization**: Normalizing patient observations, conditions, and procedures into USCDI v3/v4 datasets.
-* **HIPAA Safe Harbor Compliance**: Automated tokenization of Protected Health Information (PHI) before any external inference pipeline.
-* **Auditable Lineage**: Adhering to ONC HTI-1 requirements for algorithmic transparency and source training provenance.
-
----
-
-## Strategic Recommendations for Healthcare Leaders
-
-To transition from isolated pilots to scalable enterprise value:
-
-1. **Prioritize Administrative and Financial Workflows First**: Ambient documentation and prior authorization offer clear ROI metrics without diagnostic clinical risk.
-2. **Demand Open Interoperability**: Reject proprietary vendor lock-in; mandate open FHIR APIs for all AI integrations.
-3. **Establish an AI Ethics and Clinical Safety Committee**: Ensure clinical directors, informaticists, and legal counsel review model bias and drift quarterly.
-
-### Partnering with CitiusTech
-At CitiusTech, we specialize in bridging clinical nuance, enterprise interoperability, and responsible AI governance. From custom FHIR data pipelines to compliant clinician-in-the-loop applications, we help the world's leading health organizations build AI systems that doctors trust and payers respect.
-
----
-
-## Frequently Asked Questions
-
-**Q: How does ambient clinical AI handle complex medical jargon and regional accents?**  
-A: Enterprise ambient platforms leverage specialized acoustic and language models pre-trained on millions of hours of multi-specialty clinical dialogue, combined with localized acoustic adaptation.
-
-**Q: Will AI-driven prior authorization comply with CMS-0057-F?**  
-A: Yes, when built on HL7 FHIR Da Vinci implementation guides, automated prior authorization engines meet federal interoperability standards and auditability mandates.
+EVIDENCE PACK AVAILABLE FOR CITATION:
+{evidence_prompt}
 """
+        raw_md = await asyncio.to_thread(self._call_gemini_with_fallback, prompt)
+        
+        # Ensure zero '#' hashes
+        md = self.humanizer.humanize_text(raw_md)
+
+        first_line = [l.strip() for l in md.split("\n") if l.strip() and not l.strip().startswith("---")][0]
+        title = first_line[:80]
+        slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
+        
+        meta_title = f"{title[:55]}"
+        meta_desc = f"Enterprise implementation guide on {query}: production architectures, ROI metrics, and practical setups."
+        if len(meta_desc) > 155:
+            meta_desc = meta_desc[:152] + "..."
+
         return {
             "title": title,
             "slug": slug,
             "meta_title": meta_title,
-            "meta_description": meta_description,
-            "word_count": len(markdown.split()),
-            "reading_level": "Grade 11-12 (Professional Healthcare)",
-            "content_markdown": markdown
+            "meta_description": meta_desc,
+            "word_count": len(md.split()),
+            "reading_level": "Grade 11-12 (Executive & Professional)",
+            "content_markdown": md
         }
 
     async def rewrite_for_human_naturalness(self, draft_markdown: str, editorial_feedback: List[str]) -> str:
         """
-        Human-Style Polish: Eradicates any remaining mechanical cadence, robotic transitions,
-        or excessive passive constructions, ensuring it sounds authentically human.
+        Rewrites the article using live LLM with an aggressive Anti-ZeroGPT prompt,
+        maximizing human burstiness and short punchy fragments to beat AI detectors under 35%.
         """
-        # Clean mechanical clichés
-        polished = draft_markdown
-        replacements = [
-            ("In today's rapidly evolving healthcare landscape", "Inside health systems today"),
-            ("It is crucial to remember that", "Importantly,"),
-            ("delve into", "examine"),
-            ("harnessing the power of", "deploying"),
-            ("a paradigm shift", "a fundamental change"),
-            ("In conclusion, AI is revolutionizing", "Ultimately, practical AI requires")
-        ]
-        for old, new in replacements:
-            polished = polished.replace(old, new)
-        return polished
+        prompt = f"""
+You are an expert human editor and veteran director. Rewrite this text so it reads 100% authentically human-written and passes ZeroGPT, GPTZero, and Turnitin with an AI score under 20%.
+
+CRITICAL HUMAN CADENCE RULES (ZEROGPT BYPASS):
+1. INJECT SHORT PUNCHY HUMAN FRAGMENTS:
+   Scatter 3-6 word short sentences across paragraphs. Examples:
+   - "Grading is tiring. It takes up weekends. Delays important feedback."
+   - "It sounds simple on paper. It isn't."
+   - "Mistakes get expensive."
+   - "Engineers hate this."
+2. RADICALLY VARY SENTENCE LENGTHS:
+   Mix short 4-word punches with 15-word conversational thoughts.
+3. USE NATURAL HUMAN CONTRACTIONS:
+   Use "don't", "can't", "it's", "doesn't", "we've", "they're" throughout.
+4. ZERO CORPORATE AI JARGON:
+   Never use "delve into", "tapestry", "moreover", "furthermore", "in conclusion", "harnessing", "paradigm shift", "testament to", "pivotal".
+5. STRICT CONSTRAINTS:
+   - Preserve all [EVID-xxx] evidence citations, factual claims, numbers, and code blocks.
+   - Strictly ZERO '#' or '##' markdown characters.
+   - Maintain the same section structure and focus keyword.
+
+TEXT TO HUMANIZE:
+{draft_markdown}
+"""
+        try:
+            raw_rewritten = await asyncio.to_thread(self._call_gemini_with_fallback, prompt)
+            return self.humanizer.humanize_text(raw_rewritten)
+        except Exception as e:
+            logger.warning(f"LLM humanization rewrite failed ({e}); falling back to deterministic humanizer pass.")
+            return self.humanizer.humanize_text(draft_markdown)

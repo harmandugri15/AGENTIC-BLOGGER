@@ -18,11 +18,9 @@ class LLMProvider:
     """
 
     CANDIDATE_MODELS = [
-        "gemini-3.8-flash",
         "gemini-3.5-flash",
         "gemini-3.5-flash-lite",
-        "gemini-3-flash-preview",
-        "gemini-flash-latest"
+        "gemini-3.8-flash"
     ]
     CANDIDATE_GEMINI_MODELS = CANDIDATE_MODELS
     CANDIDATE_GROQ_MODELS = [
@@ -102,8 +100,9 @@ class LLMProvider:
             if self.genai:
                 for model_name in self.CANDIDATE_GEMINI_MODELS:
                     try:
+                        logger.info(f"Calling Gemini model '{model_name}'...")
                         model = self.genai.GenerativeModel(model_name)
-                        response = model.generate_content(prompt)
+                        response = model.generate_content(prompt, request_options={"timeout": 60})
                         if response and response.text:
                             logger.info(f"Successfully generated content using Gemini '{model_name}'.")
                             return response.text.strip()
